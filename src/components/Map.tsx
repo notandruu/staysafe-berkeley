@@ -1,13 +1,13 @@
 
-import React, { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
 import { Warning } from '@/types';
 import { getWarningTypeColor } from '@/services/warningService';
 import { cn } from '@/lib/utils';
 
-// Mapbox public token
-const MAPBOX_TOKEN = 'pk.eyJ1IjoiYW5kcmV3amxpdTIyIiwiYSI6ImNtN241OGxvbTBtOGMycXEwdzh2azIxNXAifQ.jIe8exS7uHOj-pH9iNz0kA';
+// You'll need to sign up for a Google Maps API key
+// For now, we'll use a placeholder. In a production app, this should be in an environment variable.
+const GOOGLE_MAPS_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY';
 
 interface MapProps {
   warnings: Warning[];
@@ -15,103 +15,178 @@ interface MapProps {
   onWarningSelect: (warningId: string) => void;
 }
 
+const containerStyle = {
+  width: '100%',
+  height: '100%'
+};
+
+const defaultCenter = {
+  lat: 37.8719, // UC Berkeley coordinates
+  lng: -122.2590
+};
+
 const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect }) => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const markers = useRef<{ [key: string]: mapboxgl.Marker }>({});
-  const popups = useRef<{ [key: string]: mapboxgl.Popup }>({});
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [apiKey, setApiKey] = useState<string>(GOOGLE_MAPS_API_KEY);
+  const [activeMarker, setActiveMarker] = useState<string | null>(null);
+  const [showTokenInput, setShowTokenInput] = useState(GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY');
   
-  useEffect(() => {
-    if (!mapContainer.current) return;
+  // Load the Google Maps JS API
+  const { isLoaded, loadError } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: apiKey,
+    ...(apiKey !== 'YOUR_GOOGLE_MAPS_API_KEY' ? {} : { preventGoogleFontsLoading: true })
+  });
 
-    mapboxgl.accessToken = MAPBOX_TOKEN;
-    
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/light-v11',
-      center: [-122.2590, 37.8719], // UC Berkeley coordinates
-      zoom: 14,
-      attributionControl: false
-    });
-
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-    map.current.addControl(new mapboxgl.AttributionControl({ compact: true }));
-    
-    // Clean up on unmount
-    return () => {
-      map.current?.remove();
-      
-      // Clean up markers and popups
-      Object.values(markers.current).forEach(marker => marker.remove());
-      Object.values(popups.current).forEach(popup => popup.remove());
-    };
+  // Store map reference
+  const onLoad = useCallback((map: google.maps.Map) => {
+    setMap(map);
   }, []);
 
-  // Add markers for each warning
-  useEffect(() => {
-    if (!map.current) return;
-    
-    // Remove existing markers
-    Object.values(markers.current).forEach(marker => marker.remove());
-    Object.values(popups.current).forEach(popup => popup.remove());
-    markers.current = {};
-    popups.current = {};
-    
-    // Add new markers
-    warnings.forEach(warning => {
-      // Create marker element
-      const el = document.createElement('div');
-      el.className = 'warning-marker';
-      el.style.backgroundColor = getWarningTypeColor(warning.type);
-      
-      // Create popup
-      const popup = new mapboxgl.Popup({ offset: 25, closeButton: false })
-        .setHTML(`
-          <div class="warning-popup">
-            <h3>${warning.title}</h3>
-            <p class="location">${warning.location}</p>
-          </div>
-        `);
-      
-      // Create marker
-      const marker = new mapboxgl.Marker(el)
-        .setLngLat([warning.coordinates.longitude, warning.coordinates.latitude])
-        .setPopup(popup)
-        .addTo(map.current!);
-      
-      // Add click event
-      el.addEventListener('click', () => {
-        onWarningSelect(warning.id);
-      });
-      
-      markers.current[warning.id] = marker;
-      popups.current[warning.id] = popup;
-    });
-  }, [warnings, map.current, onWarningSelect]);
+  const onUnmount = useCallback(() => {
+    setMap(null);
+  }, []);
 
   // Handle selected warning
   useEffect(() => {
-    if (!map.current || !selectedWarningId) return;
+    if (!map || !selectedWarningId) return;
     
-    const marker = markers.current[selectedWarningId];
     const warning = warnings.find(w => w.id === selectedWarningId);
     
-    if (marker && warning) {
+    if (warning) {
       // Center map on the marker
-      map.current.flyTo({
-        center: [warning.coordinates.longitude, warning.coordinates.latitude],
-        zoom: 15,
-        duration: 1000
+      map.panTo({
+        lat: warning.coordinates.latitude,
+        lng: warning.coordinates.longitude
       });
+      map.setZoom(16);
       
-      // Show popup
-      marker.togglePopup();
+      // Show info window
+      setActiveMarker(selectedWarningId);
     }
-  }, [selectedWarningId, warnings]);
+  }, [selectedWarningId, warnings, map]);
+
+  const handleMarkerClick = (warningId: string) => {
+    onWarningSelect(warningId);
+    setActiveMarker(warningId);
+  };
+
+  const handleInfoWindowClose = () => {
+    setActiveMarker(null);
+  };
+
+  const handleTokenSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowTokenInput(false);
+  };
+
+  if (loadError) {
+    return (
+      <div className="flex items-center justify-center h-full bg-gray-100 p-4">
+        <div className="text-center max-w-md">
+          <h3 className="text-lg font-semibold text-red-600 mb-2">Error Loading Google Maps</h3>
+          <p className="text-gray-600">
+            There was a problem loading Google Maps. Please check your API key and internet connection.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="relative w-full h-full rounded-lg overflow-hidden">
-      <div ref={mapContainer} className="absolute inset-0" />
+    <div className={cn(
+      "relative w-full h-full rounded-lg overflow-hidden", 
+      showTokenInput ? "flex items-center justify-center bg-gray-100" : ""
+    )}>
+      {showTokenInput ? (
+        <div className="max-w-md w-full p-6 bg-white rounded-lg shadow-lg">
+          <h2 className="text-xl font-semibold mb-4">Google Maps API Key Required</h2>
+          <p className="mb-4 text-gray-600">
+            To display the map, please enter your Google Maps API key.
+            You can get one at the <a href="https://console.cloud.google.com/google/maps-apis/" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Google Cloud Console</a>.
+          </p>
+          <form onSubmit={handleTokenSubmit}>
+            <input
+              type="text"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              className="w-full p-2 mb-4 border border-gray-300 rounded"
+              placeholder="Enter Google Maps API key"
+            />
+            <button
+              type="submit"
+              className="w-full py-2 px-4 bg-primary text-white rounded hover:bg-primary/90 transition-colors"
+            >
+              Submit
+            </button>
+          </form>
+        </div>
+      ) : isLoaded ? (
+        <GoogleMap
+          mapContainerStyle={containerStyle}
+          center={defaultCenter}
+          zoom={14}
+          onLoad={onLoad}
+          onUnmount={onUnmount}
+          options={{
+            disableDefaultUI: false,
+            zoomControl: true,
+            streetViewControl: false,
+            mapTypeControl: false,
+            fullscreenControl: true,
+            styles: [
+              {
+                featureType: "poi",
+                elementType: "labels",
+                stylers: [{ visibility: "off" }]
+              }
+            ]
+          }}
+        >
+          {warnings.map(warning => (
+            <Marker
+              key={warning.id}
+              position={{
+                lat: warning.coordinates.latitude,
+                lng: warning.coordinates.longitude
+              }}
+              onClick={() => handleMarkerClick(warning.id)}
+              icon={{
+                path: google.maps.SymbolPath.CIRCLE,
+                fillColor: getWarningTypeColor(warning.type),
+                fillOpacity: 1,
+                strokeColor: '#FFFFFF',
+                strokeWeight: 2,
+                scale: 8,
+              }}
+              animation={google.maps.Animation.DROP}
+            />
+          ))}
+
+          {activeMarker && (
+            <InfoWindow
+              position={{
+                lat: warnings.find(w => w.id === activeMarker)?.coordinates.latitude || 0,
+                lng: warnings.find(w => w.id === activeMarker)?.coordinates.longitude || 0
+              }}
+              onCloseClick={handleInfoWindowClose}
+            >
+              <div className="warning-popup p-1 max-w-[200px]">
+                <h3 className="text-sm font-semibold mb-1">
+                  {warnings.find(w => w.id === activeMarker)?.title}
+                </h3>
+                <p className="text-xs text-gray-600">
+                  {warnings.find(w => w.id === activeMarker)?.location}
+                </p>
+              </div>
+            </InfoWindow>
+          )}
+        </GoogleMap>
+      ) : (
+        <div className="flex items-center justify-center h-full bg-gray-100">
+          <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+        </div>
+      )}
     </div>
   );
 };
