@@ -43,22 +43,45 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
     setMap(null);
   }, []);
 
-  // Handle selected warning
+  // Handle selected warning with smooth animation
   useEffect(() => {
     if (!map || !selectedWarningId) return;
     
     const warning = warnings.find(w => w.id === selectedWarningId);
     
     if (warning) {
-      // Center map on the marker
+      // Smooth pan to the marker position
       map.panTo({
         lat: warning.coordinates.latitude,
         lng: warning.coordinates.longitude
       });
-      map.setZoom(16);
       
-      // Show info window
-      setActiveMarker(selectedWarningId);
+      // Smooth zoom animation
+      const currentZoom = map.getZoom() || 14;
+      const targetZoom = 16;
+      
+      if (currentZoom !== targetZoom) {
+        // Only animate zoom if we're not already at the target zoom level
+        const steps = 10; // Number of steps in the animation
+        const delay = 20; // Milliseconds between steps
+        const zoomStep = (targetZoom - currentZoom) / steps;
+        
+        let step = 0;
+        const zoomInterval = setInterval(() => {
+          if (step < steps) {
+            const newZoom = currentZoom + (zoomStep * (step + 1));
+            map.setZoom(newZoom);
+            step++;
+          } else {
+            clearInterval(zoomInterval);
+          }
+        }, delay);
+      }
+      
+      // Show info window with a slight delay to let the animation finish
+      setTimeout(() => {
+        setActiveMarker(selectedWarningId);
+      }, 300);
     }
   }, [selectedWarningId, warnings, map]);
 
