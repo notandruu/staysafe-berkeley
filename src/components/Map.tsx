@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader, Marker, InfoWindow, MarkerClusterer } from '@react-google-maps/api';
 import { Warning } from '@/types';
 import { getWarningTypeColor } from '@/services/warningService';
 import { cn } from '@/lib/utils';
@@ -135,25 +135,40 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
             ]
           }}
         >
-          {warnings.map(warning => (
-            <Marker
-              key={warning.id}
-              position={{
-                lat: warning.coordinates.latitude,
-                lng: warning.coordinates.longitude
-              }}
-              onClick={() => handleMarkerClick(warning.id)}
-              icon={{
-                path: google.maps.SymbolPath.CIRCLE,
-                fillColor: getWarningTypeColor(warning.type),
-                fillOpacity: 1,
-                strokeColor: '#FFFFFF',
-                strokeWeight: 2,
-                scale: 8,
-              }}
-              animation={google.maps.Animation.DROP}
-            />
-          ))}
+          <MarkerClusterer
+            options={{
+              imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
+              gridSize: 50,
+              minimumClusterSize: 3,
+              zoomOnClick: true,
+              averageCenter: true,
+            }}
+          >
+            {(clusterer) => (
+              <>
+                {warnings.map(warning => (
+                  <Marker
+                    key={warning.id}
+                    position={{
+                      lat: warning.coordinates.latitude,
+                      lng: warning.coordinates.longitude
+                    }}
+                    onClick={() => handleMarkerClick(warning.id)}
+                    icon={{
+                      path: google.maps.SymbolPath.CIRCLE,
+                      fillColor: getWarningTypeColor(warning.type),
+                      fillOpacity: 1,
+                      strokeColor: '#FFFFFF',
+                      strokeWeight: 2,
+                      scale: 8,
+                    }}
+                    animation={google.maps.Animation.DROP}
+                    clusterer={clusterer}
+                  />
+                ))}
+              </>
+            )}
+          </MarkerClusterer>
 
           {activeMarker && (
             <InfoWindow
