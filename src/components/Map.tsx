@@ -5,9 +5,8 @@ import { Warning } from '@/types';
 import { getWarningTypeColor } from '@/services/warningService';
 import { cn } from '@/lib/utils';
 
-// You'll need to sign up for a Google Maps API key
-// For now, we'll use a placeholder. In a production app, this should be in an environment variable.
-const GOOGLE_MAPS_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY';
+// Google Maps API key
+const GOOGLE_MAPS_API_KEY = 'AIzaSyAJ5I98cSgM_DVo3MGcCzX6eU75LXYYxIs';
 
 interface MapProps {
   warnings: Warning[];
@@ -27,15 +26,12 @@ const defaultCenter = {
 
 const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect }) => {
   const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [apiKey, setApiKey] = useState<string>(GOOGLE_MAPS_API_KEY);
   const [activeMarker, setActiveMarker] = useState<string | null>(null);
-  const [showTokenInput, setShowTokenInput] = useState(GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY');
   
-  // Load the Google Maps JS API
+  // Load the Google Maps JS API with your API key
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: apiKey,
-    ...(apiKey !== 'YOUR_GOOGLE_MAPS_API_KEY' ? {} : { preventGoogleFontsLoading: true })
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY
   });
 
   // Store map reference
@@ -75,11 +71,6 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
     setActiveMarker(null);
   };
 
-  const handleTokenSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setShowTokenInput(false);
-  };
-
   if (loadError) {
     return (
       <div className="flex items-center justify-center h-full bg-gray-100 p-4">
@@ -94,34 +85,12 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
   }
 
   return (
-    <div className={cn(
-      "relative w-full h-full rounded-lg overflow-hidden", 
-      showTokenInput ? "flex items-center justify-center bg-gray-100" : ""
-    )}>
-      {showTokenInput ? (
-        <div className="max-w-md w-full p-6 bg-white rounded-lg shadow-lg">
-          <h2 className="text-xl font-semibold mb-4">Google Maps API Key Required</h2>
-          <p className="mb-4 text-gray-600">
-            To display the map, please enter your Google Maps API key.
-            You can get one at the <a href="https://console.cloud.google.com/google/maps-apis/" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Google Cloud Console</a>.
-          </p>
-          <form onSubmit={handleTokenSubmit}>
-            <input
-              type="text"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              className="w-full p-2 mb-4 border border-gray-300 rounded"
-              placeholder="Enter Google Maps API key"
-            />
-            <button
-              type="submit"
-              className="w-full py-2 px-4 bg-primary text-white rounded hover:bg-primary/90 transition-colors"
-            >
-              Submit
-            </button>
-          </form>
+    <div className="relative w-full h-full rounded-lg overflow-hidden">
+      {!isLoaded ? (
+        <div className="flex items-center justify-center h-full bg-gray-100">
+          <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
         </div>
-      ) : isLoaded ? (
+      ) : (
         <GoogleMap
           mapContainerStyle={containerStyle}
           center={defaultCenter}
@@ -182,10 +151,6 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
             </InfoWindow>
           )}
         </GoogleMap>
-      ) : (
-        <div className="flex items-center justify-center h-full bg-gray-100">
-          <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-        </div>
       )}
     </div>
   );
