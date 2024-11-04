@@ -94,83 +94,6 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
     setActiveMarker(null);
   };
 
-  // Get appropriate marker icon based on warning type
-  const getMarkerIcon = useCallback((warning: Warning) => {
-    const color = getWarningTypeColor(warning.type);
-    const isSelected = warning.id === selectedWarningId;
-    
-    // Define shape based on warning type
-    let path: google.maps.SymbolPath | string;
-    let scale: number = isSelected ? 10 : 8;
-    
-    // Choose shape based on warning type
-    switch (warning.type) {
-      case 'fire':
-      case 'hazmat':
-        // Triangle for fire and hazardous situations
-        path = google.maps.SymbolPath.BACKWARD_CLOSED_ARROW;
-        break;
-      case 'police':
-      case 'protest':
-        // Star for police activities and protests
-        path = google.maps.SymbolPath.FORWARD_CLOSED_ARROW;
-        break;
-      case 'earthquake':
-        // Circle for earthquakes
-        path = google.maps.SymbolPath.CIRCLE;
-        break;
-      case 'weather':
-        // Use a custom square path for weather warnings since RECTANGLE doesn't exist
-        path = 'M -5,-5 L 5,-5 L 5,5 L -5,5 Z';
-        break;
-      case 'power':
-      default:
-        // Circle for other warnings
-        path = google.maps.SymbolPath.CIRCLE;
-    }
-    
-    // Configure marker appearance
-    return {
-      path,
-      fillColor: color,
-      fillOpacity: 0.8,
-      strokeColor: '#FFFFFF',
-      strokeWeight: 2,
-      scale,
-      // Add animation for selected marker or high severity
-      animation: isSelected || warning.severity === 'high' 
-        ? google.maps.Animation.BOUNCE 
-        : google.maps.Animation.DROP
-    };
-  }, [selectedWarningId]);
-
-  // Create pulsing marker effect
-  const createPulsingMarker = useCallback((warning: Warning) => {
-    const color = getWarningTypeColor(warning.type);
-    const isSelected = warning.id === selectedWarningId;
-    const isHighSeverity = warning.severity === 'high';
-    
-    // Define pulsing animation class
-    const pulsingClass = isHighSeverity || isSelected ? 'animate-ping' : '';
-    
-    // Only fire, police, and hazmat warnings should pulse
-    const shouldPulse = ['fire', 'police', 'hazmat'].includes(warning.type) || isHighSeverity;
-    
-    // Create a custom SVG marker
-    const svgMarker = {
-      path: "M -1,0 A 1,1 0 0 0 -3,0 1,1 0 0 0 -1,0M 1,0 A 1,1 0 0 1 3,0 1,1 0 0 1 1,0M -3,3 Q 0,5 3,3",
-      fillColor: color,
-      fillOpacity: 0.8,
-      strokeColor: "#FFFFFF",
-      strokeWeight: 2,
-      scale: isSelected ? 3 : 2.5,
-      // Add a bounce animation for selected marker
-      animation: isSelected ? google.maps.Animation.BOUNCE : null
-    };
-    
-    return svgMarker;
-  }, [selectedWarningId]);
-
   if (loadError) {
     return (
       <div className="flex items-center justify-center h-full bg-gray-100 p-4">
@@ -231,7 +154,15 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
                       lng: warning.coordinates.longitude
                     }}
                     onClick={() => handleMarkerClick(warning.id)}
-                    icon={getMarkerIcon(warning)}
+                    icon={{
+                      path: google.maps.SymbolPath.CIRCLE,
+                      fillColor: getWarningTypeColor(warning.type),
+                      fillOpacity: 1,
+                      strokeColor: '#FFFFFF',
+                      strokeWeight: 2,
+                      scale: 8,
+                    }}
+                    animation={google.maps.Animation.DROP}
                     clusterer={clusterer}
                   />
                 ))}
