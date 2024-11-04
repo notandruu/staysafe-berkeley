@@ -120,8 +120,8 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
         path = google.maps.SymbolPath.CIRCLE;
         break;
       case 'weather':
-        // Square for weather warnings
-        path = google.maps.SymbolPath.RECTANGLE;
+        // Use a custom square path for weather warnings since RECTANGLE doesn't exist
+        path = 'M -5,-5 L 5,-5 L 5,5 L -5,5 Z';
         break;
       case 'power':
       default:
