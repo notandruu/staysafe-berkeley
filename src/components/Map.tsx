@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { GoogleMap, useJsApiLoader, Marker, InfoWindow, MarkerClusterer } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader, Marker, InfoWindow, MarkerClusterer, Circle } from '@react-google-maps/api';
 import { Warning } from '@/types';
 import { getWarningTypeColor } from '@/services/warningService';
 import { cn } from '@/lib/utils';
@@ -94,6 +94,80 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
     setActiveMarker(null);
   };
 
+  // Get appropriate marker icon based on warning type
+  const getMarkerIcon = useCallback((warning: Warning) => {
+    const color = getWarningTypeColor(warning.type);
+    const isSelected = warning.id === selectedWarningId;
+    
+    // Custom icon paths based on warning type
+    switch (warning.type) {
+      case 'violent_crime':
+        // Fist icon for violent crime
+        return {
+          path: "M 0,0 m -3,0 a 3,3 0 1,0 6,0 a 3,3 0 1,0 -6,0 M -1,-3 L -1,0 L 1,0 L 1,-3 L 2,-2 L 0,-4 L -2,-2 Z", // Fist-like shape
+          fillColor: color,
+          fillOpacity: 0.9,
+          strokeColor: '#FFFFFF',
+          strokeWeight: 2,
+          scale: isSelected ? 4 : 3,
+          animation: google.maps.Animation.BOUNCE
+        };
+      
+      case 'shots_fired':
+        // Target icon for shots fired
+        return {
+          path: "M -1,0 A 1,1 0 0 0 -3,0 1,1 0 0 0 -1,0M 1,0 A 1,1 0 0 1 3,0 1,1 0 0 1 1,0M -2,-2 Q 0.5,-3 2,-2M -2,2 Q 0.5,3 2,2M -3,0 Q -2,0.5 0,0 Q 2,0.5 3,0", // Target-like shape
+          fillColor: color,
+          fillOpacity: 1,
+          strokeColor: '#FFFFFF',
+          strokeWeight: 2,
+          scale: isSelected ? 5 : 4,
+          animation: google.maps.Animation.BOUNCE
+        };
+        
+      case 'robbery':
+        // Shopping bag icon for robbery
+        return {
+          path: "M -3,-2 L -3,3 L 3,3 L 3,-2 L 2,-2 L 2,-3 L -2,-3 L -2,-2 Z", // Bag-like shape
+          fillColor: color,
+          fillOpacity: 0.9,
+          strokeColor: '#FFFFFF',
+          strokeWeight: 2,
+          scale: isSelected ? 3 : 2.5,
+          animation: isSelected ? google.maps.Animation.BOUNCE : google.maps.Animation.DROP
+        };
+        
+      case 'fire':
+        // Flame icon
+        return {
+          path: "M 0,0 m -2,-2 q 2,-3 4,0 q 2,3 -2,5 q -4,-2 -2,-5 z", // Flame-like shape
+          fillColor: color,
+          fillOpacity: 0.9,
+          strokeColor: '#FFFFFF',
+          strokeWeight: 2,
+          scale: isSelected ? 3 : 2.5,
+          animation: isSelected ? google.maps.Animation.BOUNCE : google.maps.Animation.DROP
+        };
+        
+      default:
+        // Default circular marker for other warning types
+        return {
+          path: google.maps.SymbolPath.CIRCLE,
+          fillColor: color,
+          fillOpacity: 0.8,
+          strokeColor: '#FFFFFF',
+          strokeWeight: 2,
+          scale: isSelected ? 10 : 8,
+          animation: isSelected ? google.maps.Animation.BOUNCE : google.maps.Animation.DROP
+        };
+    }
+  }, [selectedWarningId]);
+
+  // Check if a warning is of a high-danger type
+  const isHighDangerWarning = (type: WarningType): boolean => {
+    return ['violent_crime', 'shots_fired', 'robbery'].includes(type);
+  };
+
   if (loadError) {
     return (
       <div className="flex items-center justify-center h-full bg-gray-100 p-4">
@@ -135,6 +209,29 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
             ]
           }}
         >
+          {/* Add red circles for shots fired warnings */}
+          {warnings
+            .filter(warning => warning.type === 'shots_fired')
+            .map(warning => (
+              <Circle
+                key={`circle-${warning.id}`}
+                center={{
+                  lat: warning.coordinates.latitude,
+                  lng: warning.coordinates.longitude
+                }}
+                options={{
+                  strokeColor: '#FF0000',
+                  strokeOpacity: 0.8,
+                  strokeWeight: 2,
+                  fillColor: '#FF0000',
+                  fillOpacity: 0.2,
+                  radius: 100, // 100 meters radius
+                  zIndex: 1
+                }}
+              />
+            ))
+          }
+
           <MarkerClusterer
             options={{
               imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
@@ -154,15 +251,8 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
                       lng: warning.coordinates.longitude
                     }}
                     onClick={() => handleMarkerClick(warning.id)}
-                    icon={{
-                      path: google.maps.SymbolPath.CIRCLE,
-                      fillColor: getWarningTypeColor(warning.type),
-                      fillOpacity: 1,
-                      strokeColor: '#FFFFFF',
-                      strokeWeight: 2,
-                      scale: 8,
-                    }}
-                    animation={google.maps.Animation.DROP}
+                    icon={getMarkerIcon(warning)}
+                    zIndex={isHighDangerWarning(warning.type) ? 10 : 1} // High-danger warnings appear on top
                     clusterer={clusterer}
                   />
                 ))}

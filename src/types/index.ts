@@ -21,4 +21,8 @@ export type WarningType =
   | 'hazmat' 
   | 'power' 
   | 'protest' 
-  | 'other';
+  | 'other'
+  | 'violent_crime'
+  | 'shots_fired'
+  | 'robbery';
+
