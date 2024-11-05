@@ -1,7 +1,7 @@
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow, MarkerClusterer, Circle } from '@react-google-maps/api';
-import { Warning } from '@/types';
+import { Warning, WarningType } from '@/types';
 import { getWarningTypeColor } from '@/services/warningService';
 import { cn } from '@/lib/utils';
 
