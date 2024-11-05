@@ -114,14 +114,14 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
         };
       
       case 'shots_fired':
-        // Target icon for shots fired
+        // Gun icon for shots fired based on the provided image
         return {
-          path: "M -1,0 A 1,1 0 0 0 -3,0 1,1 0 0 0 -1,0M 1,0 A 1,1 0 0 1 3,0 1,1 0 0 1 1,0M -2,-2 Q 0.5,-3 2,-2M -2,2 Q 0.5,3 2,2M -3,0 Q -2,0.5 0,0 Q 2,0.5 3,0", // Target-like shape
+          path: "M -8,0 L -7,3 L -5,3 L -4,1 L 4,1 L 7,3 L 7,0 L 4,-2 L 4,-5 L 1,-5 L 1,-2 L -4,-2 L -4,-1 L -5,-1 L -8,0 Z M -3,-1 L -2,-1 L -1,-1 Z", // Gun shape based on the image
           fillColor: color,
           fillOpacity: 1,
-          strokeColor: '#FFFFFF',
+          strokeColor: '#000000',
           strokeWeight: 2,
-          scale: isSelected ? 5 : 4,
+          scale: isSelected ? 2 : 1.5,
           animation: google.maps.Animation.BOUNCE
         };
         
