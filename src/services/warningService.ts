@@ -33,6 +33,32 @@ export const getWarnings = (): Warning[] => {
     },
     {
       id: uuidv4(),
+      timestamp: "2023-11-13T21:30:00Z",
+      type: "violent_crime",
+      title: "Assault Reported",
+      description: "Assault reported near Telegraph Ave. Suspect fled the scene. Police investigating.",
+      location: "Telegraph Avenue",
+      coordinates: {
+        latitude: 37.8671,
+        longitude: -122.2580
+      },
+      severity: "high"
+    },
+    {
+      id: uuidv4(),
+      timestamp: "2023-11-13T20:15:00Z",
+      type: "shots_fired",
+      title: "Shots Fired",
+      description: "Reports of shots fired. Police on scene. Please avoid the area.",
+      location: "South Campus",
+      coordinates: {
+        latitude: 37.8662,
+        longitude: -122.2565
+      },
+      severity: "high"
+    },
+    {
+      id: uuidv4(),
       timestamp: "2023-11-12T14:20:00Z",
       type: "fire",
       title: "Small Fire Reported",
@@ -43,6 +69,19 @@ export const getWarnings = (): Warning[] => {
         longitude: -122.2555
       },
       severity: "medium"
+    },
+    {
+      id: uuidv4(),
+      timestamp: "2023-11-12T10:10:00Z",
+      type: "robbery",
+      title: "Robbery Reported",
+      description: "A student was robbed of their laptop near the library. Suspect fled on foot.",
+      location: "Main Library",
+      coordinates: {
+        latitude: 37.8722,
+        longitude: -122.2600
+      },
+      severity: "high"
     },
     {
       id: uuidv4(),
@@ -115,6 +154,12 @@ export const getWarningTypeIcon = (type: WarningType): string => {
       return "zap";
     case "protest":
       return "megaphone";
+    case "violent_crime":
+      return "fist";
+    case "shots_fired":
+      return "target";
+    case "robbery":
+      return "shopping-bag";
     default:
       return "alert-circle";
   }
@@ -136,6 +181,12 @@ export const getWarningTypeColor = (type: WarningType): string => {
       return "#FFD700"; // Gold
     case "protest":
       return "#DA70D6"; // Orchid
+    case "violent_crime":
+      return "#8B5CF6"; // Vivid Purple
+    case "shots_fired":
+      return "#FF0000"; // Bright Red
+    case "robbery": 
+      return "#F97316"; // Bright Orange
     default:
       return "#808080"; // Gray
   }

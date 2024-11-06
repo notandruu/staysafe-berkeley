@@ -1,7 +1,7 @@
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { GoogleMap, useJsApiLoader, Marker, InfoWindow, MarkerClusterer } from '@react-google-maps/api';
-import { Warning } from '@/types';
+import { GoogleMap, useJsApiLoader, Marker, InfoWindow, MarkerClusterer, Circle } from '@react-google-maps/api';
+import { Warning, WarningType } from '@/types';
 import { getWarningTypeColor } from '@/services/warningService';
 import { cn } from '@/lib/utils';
 
@@ -94,6 +94,36 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
     setActiveMarker(null);
   };
 
+  // Check if a warning is of a high-danger type
+  const isHighDangerWarning = (type: WarningType): boolean => {
+    return ['violent_crime', 'shots_fired', 'robbery'].includes(type);
+  };
+
+  // Get marker options based on warning type
+  const getMarkerOptions = useCallback((warning: Warning) => {
+    const color = getWarningTypeColor(warning.type);
+    const isSelected = warning.id === selectedWarningId;
+    const isHighDanger = isHighDangerWarning(warning.type);
+    
+    // Base marker properties
+    const scale = isSelected ? 10 : (isHighDanger ? 9 : 8);
+    const zIndex = isHighDanger ? 10 : 1;
+    const animation = isSelected 
+      ? google.maps.Animation.BOUNCE 
+      : (isHighDanger ? google.maps.Animation.DROP : undefined);
+    
+    return {
+      path: google.maps.SymbolPath.CIRCLE,
+      fillColor: color,
+      fillOpacity: isHighDanger ? 0.9 : 0.7,
+      strokeColor: '#FFFFFF',
+      strokeWeight: isHighDanger ? 2.5 : 2,
+      scale: scale,
+      zIndex: zIndex,
+      animation: animation
+    };
+  }, [selectedWarningId]);
+
   if (loadError) {
     return (
       <div className="flex items-center justify-center h-full bg-gray-100 p-4">
@@ -135,6 +165,29 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
             ]
           }}
         >
+          {/* Add red circles for shots fired warnings */}
+          {warnings
+            .filter(warning => warning.type === 'shots_fired')
+            .map(warning => (
+              <Circle
+                key={`circle-${warning.id}`}
+                center={{
+                  lat: warning.coordinates.latitude,
+                  lng: warning.coordinates.longitude
+                }}
+                options={{
+                  strokeColor: '#FF0000',
+                  strokeOpacity: 0.8,
+                  strokeWeight: 2,
+                  fillColor: '#FF0000',
+                  fillOpacity: 0.2,
+                  radius: 100, // 100 meters radius
+                  zIndex: 1
+                }}
+              />
+            ))
+          }
+
           <MarkerClusterer
             options={{
               imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
@@ -154,15 +207,8 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
                       lng: warning.coordinates.longitude
                     }}
                     onClick={() => handleMarkerClick(warning.id)}
-                    icon={{
-                      path: google.maps.SymbolPath.CIRCLE,
-                      fillColor: getWarningTypeColor(warning.type),
-                      fillOpacity: 1,
-                      strokeColor: '#FFFFFF',
-                      strokeWeight: 2,
-                      scale: 8,
-                    }}
-                    animation={google.maps.Animation.DROP}
+                    icon={getMarkerOptions(warning)}
+                    zIndex={isHighDangerWarning(warning.type) ? 10 : 1}
                     clusterer={clusterer}
                   />
                 ))}
