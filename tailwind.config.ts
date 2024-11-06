@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -18,12 +19,22 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['Open Sans', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
+				berkeley: {
+					blue: '#003262', // Berkeley Blue
+					gold: '#FDB515', // California Gold
+					secondary: '#C4820E', // Secondary Gold
+					gray: '#8E9196', // Gray
+					dark: '#1A1F2C', // Dark Blue (almost black)
+				},
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))'

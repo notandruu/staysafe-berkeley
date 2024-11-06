@@ -50,15 +50,37 @@ const Index: React.FC = () => {
 
   return (
     <div className="h-screen flex flex-col bg-background">
-      {/* Header */}
-      <header className="px-4 py-3 border-b bg-white shadow-sm">
-        <div className="container mx-auto">
-          <h1 className="text-xl md:text-2xl font-semibold text-primary">
-            UC Berkeley WarnMe Map
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Interactive map of campus safety alerts and warnings
-          </p>
+      {/* Header with UC Berkeley Branding */}
+      <header className="bg-[#003262] text-white border-b border-[#FDB515] shadow-md">
+        <div className="container mx-auto py-4 px-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+                StaySafe Berkeley
+              </h1>
+              <p className="text-sm md:text-base text-[#C4820E] font-medium mt-1">
+                Interactive map of campus safety alerts and warnings
+              </p>
+            </div>
+            <div className="mt-2 md:mt-0 flex items-center space-x-2">
+              <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-[#FDB515] flex items-center justify-center">
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                  className="text-[#003262] h-5 w-5 md:h-6 md:w-6"
+                >
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path>
+                  <path d="m9 12 2 2 4-4"></path>
+                </svg>
+              </div>
+              <span className="hidden md:inline text-sm">UC Berkeley Campus Safety</span>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -67,7 +89,7 @@ const Index: React.FC = () => {
         {isLoading ? (
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
-              <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+              <div className="w-12 h-12 border-4 border-[#003262]/30 border-t-[#003262] rounded-full animate-spin mx-auto mb-4"></div>
               <p className="text-muted-foreground">Loading warnings...</p>
             </div>
           </div>
