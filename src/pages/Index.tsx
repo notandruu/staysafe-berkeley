@@ -58,7 +58,7 @@ const Index: React.FC = () => {
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
                 StaySafe Berkeley
               </h1>
-              <p className="text-sm md:text-base text-[#C4820E] font-medium mt-1">
+              <p className="text-sm md:text-base text-[#FDB515] font-medium mt-1">
                 Interactive map of campus safety alerts and warnings
               </p>
             </div>
