@@ -25,4 +25,3 @@ export type WarningType =
   | 'violent_crime'
   | 'shots_fired'
   | 'robbery';
-

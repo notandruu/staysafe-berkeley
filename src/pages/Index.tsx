@@ -42,15 +42,7 @@ const Index: React.FC = () => {
 
   // Filter warnings by selected severity levels
   const filteredWarnings = warnings.filter(warning => {
-    // Map the numeric severity (1-3) to our severity levels (high, medium, low)
-    const severityMap: Record<number, SeverityLevel> = {
-      3: 'high',
-      2: 'medium',
-      1: 'low'
-    };
-    
-    const warningLevel = severityMap[warning.severity];
-    return selectedSeverities.includes(warningLevel);
+    return selectedSeverities.includes(warning.severity as SeverityLevel);
   });
 
   // Get the selected warning
@@ -72,19 +64,10 @@ const Index: React.FC = () => {
       );
 
       // If the selected warning is of the severity being filtered out, close the popup
-      if (selectedWarning && severityToLevel(selectedWarning.severity) === severity) {
+      if (selectedWarning && selectedWarning.severity === severity) {
         setShowPopup(false);
         setSelectedWarningId(null);
       }
-    }
-  };
-
-  // Helper function to convert numeric severity to level
-  const severityToLevel = (severity: number): SeverityLevel => {
-    switch (severity) {
-      case 3: return 'high';
-      case 2: return 'medium';
-      default: return 'low';
     }
   };
 
