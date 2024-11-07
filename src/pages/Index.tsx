@@ -53,7 +53,7 @@ const Index: React.FC = () => {
       {/* Header with UC Berkeley Branding */}
       <header className="bg-[#003262] text-white border-b border-[#FDB515] shadow-md">
         <div className="container mx-auto py-4 px-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between">
+          <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
                 StaySafe Berkeley
@@ -62,7 +62,9 @@ const Index: React.FC = () => {
                 Interactive map of campus safety alerts and warnings
               </p>
             </div>
-            <div className="mt-2 md:mt-0 flex items-center space-x-2">
+            
+            {/* Shield Logo - Positioned top right on mobile */}
+            <div className="flex items-center space-x-2">
               <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-[#FDB515] flex items-center justify-center">
                 <svg 
                   xmlns="http://www.w3.org/2000/svg" 
