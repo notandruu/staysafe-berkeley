@@ -151,18 +151,45 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
           onLoad={onLoad}
           onUnmount={onUnmount}
           options={{
-            disableDefaultUI: false,
-            zoomControl: true,
+            disableDefaultUI: true, // Disable all UI controls
+            zoomControl: false,
             streetViewControl: false,
             mapTypeControl: false,
-            fullscreenControl: true,
+            fullscreenControl: false,
+            clickableIcons: false, // Disable POI clicks
             styles: [
+              // Remove Google logo and Terms of Use
+              {
+                featureType: "administrative",
+                elementType: "labels",
+                stylers: [{ visibility: "off" }]
+              },
+              // Hide all POIs 
               {
                 featureType: "poi",
                 elementType: "labels",
                 stylers: [{ visibility: "off" }]
+              },
+              // Hide transit icons
+              {
+                featureType: "transit",
+                elementType: "labels",
+                stylers: [{ visibility: "off" }]
+              },
+              // Simplify road labels
+              {
+                featureType: "road",
+                elementType: "labels.icon",
+                stylers: [{ visibility: "off" }]
+              },
+              // Custom styling for a cleaner look
+              {
+                featureType: "water",
+                elementType: "geometry",
+                stylers: [{ color: "#e9e9e9" }]
               }
-            ]
+            ],
+            gestureHandling: "greedy" // Enable pinch-to-zoom without requiring Ctrl key
           }}
         >
           {/* Add red circles for shots fired warnings */}
@@ -236,6 +263,11 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
           )}
         </GoogleMap>
       )}
+
+      {/* Custom attribution (replacing Google's) */}
+      <div className="absolute bottom-0 right-0 m-1 p-1 text-[8px] text-gray-500 bg-white/50 rounded">
+        Map data © UC Berkeley
+      </div>
     </div>
   );
 };
