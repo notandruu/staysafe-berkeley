@@ -21,28 +21,30 @@ const SeverityFilter: React.FC<SeverityFilterProps> = ({
   ];
 
   return (
-    <div className="flex flex-wrap items-center gap-4 p-3 bg-white rounded-lg shadow-sm border">
-      <div className="text-sm font-medium text-gray-700 mr-2">Filter by severity:</div>
-      {severityOptions.map((option) => (
-        <div key={option.value} className="flex items-center space-x-2">
-          <Checkbox
-            id={`severity-${option.value}`}
-            checked={selectedSeverities.includes(option.value)}
-            onCheckedChange={(checked) => {
-              onSeverityChange(option.value, checked === true);
-            }}
-          />
-          <div className="flex items-center space-x-2">
-            <div className={`w-3 h-3 rounded-full ${option.color}`} />
-            <Label
-              htmlFor={`severity-${option.value}`}
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-            >
-              {option.label}
-            </Label>
+    <div className="flex flex-col sm:flex-row p-3 bg-white rounded-lg shadow-sm border">
+      <div className="text-sm font-medium text-gray-700 mb-2 sm:mb-0 sm:mr-2">Filter by severity:</div>
+      <div className="flex flex-wrap gap-4">
+        {severityOptions.map((option) => (
+          <div key={option.value} className="flex items-center space-x-2">
+            <Checkbox
+              id={`severity-${option.value}`}
+              checked={selectedSeverities.includes(option.value)}
+              onCheckedChange={(checked) => {
+                onSeverityChange(option.value, checked === true);
+              }}
+            />
+            <div className="flex items-center space-x-2">
+              <div className={`w-3 h-3 rounded-full ${option.color}`} />
+              <Label
+                htmlFor={`severity-${option.value}`}
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+              >
+                {option.label}
+              </Label>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };
