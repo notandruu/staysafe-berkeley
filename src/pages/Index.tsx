@@ -6,12 +6,14 @@ import WarningPopup from '@/components/WarningPopup';
 import { Warning } from '@/types';
 import { getWarnings } from '@/services/warningService';
 import { useIsMobile } from '@/hooks/use-mobile';
+import SeverityFilter, { SeverityLevel } from '@/components/SeverityFilter';
 
 const Index: React.FC = () => {
   const [warnings, setWarnings] = useState<Warning[]>([]);
   const [selectedWarningId, setSelectedWarningId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showPopup, setShowPopup] = useState(false);
+  const [selectedSeverities, setSelectedSeverities] = useState<SeverityLevel[]>(['high', 'medium', 'low']);
   const isMobile = useIsMobile();
 
   // Load warnings data
@@ -38,10 +40,36 @@ const Index: React.FC = () => {
     setShowPopup(true);
   };
 
+  // Filter warnings by selected severity levels
+  const filteredWarnings = warnings.filter(warning => {
+    return selectedSeverities.includes(warning.severity as SeverityLevel);
+  });
+
   // Get the selected warning
   const selectedWarning = selectedWarningId 
     ? warnings.find(w => w.id === selectedWarningId) || null 
     : null;
+
+  // Handle severity filter change
+  const handleSeverityChange = (severity: SeverityLevel, isChecked: boolean) => {
+    if (isChecked) {
+      // Add severity if it's not already in the array
+      setSelectedSeverities(prev => 
+        prev.includes(severity) ? prev : [...prev, severity]
+      );
+    } else {
+      // Remove severity from the array
+      setSelectedSeverities(prev => 
+        prev.filter(s => s !== severity)
+      );
+
+      // If the selected warning is of the severity being filtered out, close the popup
+      if (selectedWarning && selectedWarning.severity === severity) {
+        setShowPopup(false);
+        setSelectedWarningId(null);
+      }
+    }
+  };
 
   // Close popup
   const handleClosePopup = () => {
@@ -98,18 +126,27 @@ const Index: React.FC = () => {
         ) : (
           <div className="h-full grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Map Container */}
-            <div className="md:col-span-2 h-[40vh] md:h-full relative bg-gray-100 rounded-lg border overflow-hidden">
-              <Map 
-                warnings={warnings}
-                selectedWarningId={selectedWarningId}
-                onWarningSelect={handleWarningSelect}
-              />
+            <div className="md:col-span-2 flex flex-col h-[40vh] md:h-full">
+              <div className="flex-1 relative bg-gray-100 rounded-lg border overflow-hidden">
+                <Map 
+                  warnings={filteredWarnings}
+                  selectedWarningId={selectedWarningId}
+                  onWarningSelect={handleWarningSelect}
+                />
+              </div>
+              {/* Severity Filter */}
+              <div className="mt-3">
+                <SeverityFilter 
+                  selectedSeverities={selectedSeverities}
+                  onSeverityChange={handleSeverityChange}
+                />
+              </div>
             </div>
 
             {/* Warnings Log */}
             <div className="h-[calc(60vh-12rem)] md:h-full border rounded-lg overflow-hidden bg-white">
               <WarningLog 
-                warnings={warnings}
+                warnings={filteredWarnings}
                 selectedWarningId={selectedWarningId}
                 onWarningSelect={handleWarningSelect}
               />
