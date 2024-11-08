@@ -7,6 +7,7 @@ import { Warning } from '@/types';
 import { getWarnings } from '@/services/warningService';
 import { useIsMobile } from '@/hooks/use-mobile';
 import SeverityFilter, { SeverityLevel } from '@/components/SeverityFilter';
+import LineGraph from '@/components/LineGraph';
 
 const Index: React.FC = () => {
   const [warnings, setWarnings] = useState<Warning[]>([]);
@@ -143,13 +144,21 @@ const Index: React.FC = () => {
               </div>
             </div>
 
-            {/* Warnings Log */}
-            <div className="h-[calc(60vh-12rem)] md:h-full border rounded-lg overflow-hidden bg-white">
-              <WarningLog 
-                warnings={filteredWarnings}
-                selectedWarningId={selectedWarningId}
-                onWarningSelect={handleWarningSelect}
-              />
+            {/* Right Side - Line Graph and Warnings Log */}
+            <div className="flex flex-col h-[calc(60vh-12rem)] md:h-full gap-4">
+              {/* Line Graph */}
+              <div className="flex-none">
+                <LineGraph warnings={warnings} />
+              </div>
+              
+              {/* Warnings Log */}
+              <div className="flex-1 border rounded-lg overflow-hidden bg-white">
+                <WarningLog 
+                  warnings={filteredWarnings}
+                  selectedWarningId={selectedWarningId}
+                  onWarningSelect={handleWarningSelect}
+                />
+              </div>
             </div>
           </div>
         )}
