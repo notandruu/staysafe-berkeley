@@ -126,7 +126,7 @@ const Index: React.FC = () => {
           </div>
         ) : (
           <div className="h-full grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Map Container */}
+            {/* Map Container and Severity Filter */}
             <div className="md:col-span-2 flex flex-col h-[40vh] md:h-full">
               <div className="flex-1 relative bg-gray-100 rounded-lg border overflow-hidden">
                 <Map 
@@ -135,7 +135,7 @@ const Index: React.FC = () => {
                   onWarningSelect={handleWarningSelect}
                 />
               </div>
-              {/* Severity Filter */}
+              {/* Severity Filter - Always visible on both mobile and desktop */}
               <div className="mt-3">
                 <SeverityFilter 
                   selectedSeverities={selectedSeverities}
