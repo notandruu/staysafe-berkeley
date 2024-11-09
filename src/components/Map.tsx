@@ -24,9 +24,39 @@ const defaultCenter = {
   lng: -122.2590
 };
 
+// Custom styles to hide Google's logos and attributions
+const mapStyles = [
+  {
+    featureType: "administrative",
+    elementType: "labels.text",
+    stylers: [{ visibility: "on" }]
+  },
+  {
+    featureType: "poi",
+    elementType: "labels",
+    stylers: [{ visibility: "off" }]
+  },
+  {
+    featureType: "transit",
+    elementType: "labels",
+    stylers: [{ visibility: "off" }]
+  },
+  {
+    featureType: "road",
+    elementType: "labels.icon",
+    stylers: [{ visibility: "off" }]
+  },
+  {
+    featureType: "water",
+    elementType: "geometry",
+    stylers: [{ color: "#e9e9e9" }]
+  }
+];
+
 const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect }) => {
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [activeMarker, setActiveMarker] = useState<string | null>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
   
   // Load the Google Maps JS API with your API key
   const { isLoaded, loadError } = useJsApiLoader({
@@ -43,6 +73,14 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
     setMap(null);
   }, []);
 
+  // Apply custom styles to hide Google attribution
+  useEffect(() => {
+    if (mapRef.current) {
+      // Add a custom class to help target Google elements
+      mapRef.current.classList.add('custom-google-map');
+    }
+  }, []);
+  
   // Handle selected warning with smooth animation
   useEffect(() => {
     if (!map || !selectedWarningId) return;
@@ -139,134 +177,105 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
 
   return (
     <div className="relative w-full h-full rounded-lg overflow-hidden">
-      {!isLoaded ? (
-        <div className="flex items-center justify-center h-full bg-gray-100">
-          <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-        </div>
-      ) : (
-        <GoogleMap
-          mapContainerStyle={containerStyle}
-          center={defaultCenter}
-          zoom={14}
-          onLoad={onLoad}
-          onUnmount={onUnmount}
-          options={{
-            disableDefaultUI: true, // Disable all UI controls
-            zoomControl: false,
-            streetViewControl: false,
-            mapTypeControl: false,
-            fullscreenControl: false,
-            clickableIcons: false, // Disable POI clicks
-            mapTypeId: google.maps.MapTypeId.SATELLITE, // Set map type to satellite view
-            styles: [
-              // Remove Google logo and Terms of Use
-              {
-                featureType: "administrative",
-                elementType: "labels",
-                stylers: [{ visibility: "off" }]
-              },
-              // Hide all POIs 
-              {
-                featureType: "poi",
-                elementType: "labels",
-                stylers: [{ visibility: "off" }]
-              },
-              // Hide transit icons
-              {
-                featureType: "transit",
-                elementType: "labels",
-                stylers: [{ visibility: "off" }]
-              },
-              // Simplify road labels
-              {
-                featureType: "road",
-                elementType: "labels.icon",
-                stylers: [{ visibility: "off" }]
-              },
-              // Custom styling for a cleaner look
-              {
-                featureType: "water",
-                elementType: "geometry",
-                stylers: [{ color: "#e9e9e9" }]
-              }
-            ],
-            gestureHandling: "greedy" // Enable pinch-to-zoom without requiring Ctrl key
-          }}
-        >
-          {/* Add red circles for shots fired warnings */}
-          {warnings
-            .filter(warning => warning.type === 'shots_fired')
-            .map(warning => (
-              <Circle
-                key={`circle-${warning.id}`}
-                center={{
-                  lat: warning.coordinates.latitude,
-                  lng: warning.coordinates.longitude
-                }}
-                options={{
-                  strokeColor: '#FF0000',
-                  strokeOpacity: 0.8,
-                  strokeWeight: 2,
-                  fillColor: '#FF0000',
-                  fillOpacity: 0.2,
-                  radius: 100, // 100 meters radius
-                  zIndex: 1
-                }}
-              />
-            ))
-          }
-
-          <MarkerClusterer
+      <div ref={mapRef} className="w-full h-full">
+        {!isLoaded ? (
+          <div className="flex items-center justify-center h-full bg-gray-100">
+            <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+          </div>
+        ) : (
+          <GoogleMap
+            mapContainerStyle={containerStyle}
+            center={defaultCenter}
+            zoom={14}
+            onLoad={onLoad}
+            onUnmount={onUnmount}
             options={{
-              imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
-              gridSize: 50,
-              minimumClusterSize: 3,
-              zoomOnClick: true,
-              averageCenter: true,
+              disableDefaultUI: false, // Enable UI controls
+              zoomControl: true,      // Show zoom controls
+              streetViewControl: false,
+              mapTypeControl: false,
+              fullscreenControl: false,
+              clickableIcons: false,
+              mapTypeId: google.maps.MapTypeId.SATELLITE, // Satellite view
+              styles: mapStyles,
+              gestureHandling: "greedy"
             }}
           >
-            {(clusterer) => (
-              <>
-                {warnings.map(warning => (
-                  <Marker
-                    key={warning.id}
-                    position={{
-                      lat: warning.coordinates.latitude,
-                      lng: warning.coordinates.longitude
-                    }}
-                    onClick={() => handleMarkerClick(warning.id)}
-                    icon={getMarkerOptions(warning)}
-                    zIndex={isHighDangerWarning(warning.type) ? 10 : 1}
-                    clusterer={clusterer}
-                  />
-                ))}
-              </>
-            )}
-          </MarkerClusterer>
+            {/* Add red circles for shots fired warnings */}
+            {warnings
+              .filter(warning => warning.type === 'shots_fired')
+              .map(warning => (
+                <Circle
+                  key={`circle-${warning.id}`}
+                  center={{
+                    lat: warning.coordinates.latitude,
+                    lng: warning.coordinates.longitude
+                  }}
+                  options={{
+                    strokeColor: '#FF0000',
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    fillColor: '#FF0000',
+                    fillOpacity: 0.2,
+                    radius: 100, // 100 meters radius
+                    zIndex: 1
+                  }}
+                />
+              ))
+            }
 
-          {activeMarker && (
-            <InfoWindow
-              position={{
-                lat: warnings.find(w => w.id === activeMarker)?.coordinates.latitude || 0,
-                lng: warnings.find(w => w.id === activeMarker)?.coordinates.longitude || 0
+            <MarkerClusterer
+              options={{
+                imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
+                gridSize: 50,
+                minimumClusterSize: 3,
+                zoomOnClick: true,
+                averageCenter: true,
               }}
-              onCloseClick={handleInfoWindowClose}
             >
-              <div className="warning-popup p-1 max-w-[200px]">
-                <h3 className="text-sm font-semibold mb-1">
-                  {warnings.find(w => w.id === activeMarker)?.title}
-                </h3>
-                <p className="text-xs text-gray-600">
-                  {warnings.find(w => w.id === activeMarker)?.location}
-                </p>
-              </div>
-            </InfoWindow>
-          )}
-        </GoogleMap>
-      )}
+              {(clusterer) => (
+                <>
+                  {warnings.map(warning => (
+                    <Marker
+                      key={warning.id}
+                      position={{
+                        lat: warning.coordinates.latitude,
+                        lng: warning.coordinates.longitude
+                      }}
+                      onClick={() => handleMarkerClick(warning.id)}
+                      icon={getMarkerOptions(warning)}
+                      zIndex={isHighDangerWarning(warning.type) ? 10 : 1}
+                      clusterer={clusterer}
+                    />
+                  ))}
+                </>
+              )}
+            </MarkerClusterer>
+
+            {activeMarker && (
+              <InfoWindow
+                position={{
+                  lat: warnings.find(w => w.id === activeMarker)?.coordinates.latitude || 0,
+                  lng: warnings.find(w => w.id === activeMarker)?.coordinates.longitude || 0
+                }}
+                onCloseClick={handleInfoWindowClose}
+              >
+                <div className="warning-popup p-1 max-w-[200px]">
+                  <h3 className="text-sm font-semibold mb-1">
+                    {warnings.find(w => w.id === activeMarker)?.title}
+                  </h3>
+                  <p className="text-xs text-gray-600">
+                    {warnings.find(w => w.id === activeMarker)?.location}
+                  </p>
+                </div>
+              </InfoWindow>
+            )}
+          </GoogleMap>
+        )}
+      </div>
 
       {/* Custom attribution (replacing Google's) */}
-      <div className="absolute bottom-0 right-0 m-1 p-1 text-[8px] text-gray-500 bg-white/50 rounded">
+      <div className="absolute bottom-0 right-0 m-1 p-1 text-[8px] text-gray-500 bg-white/50 rounded z-10">
         Map data © UC Berkeley
       </div>
     </div>

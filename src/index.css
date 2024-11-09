@@ -117,7 +117,14 @@
   color: #666;
 }
 
-/* Make sure the Google Maps controls stay above our custom UI */
+/* Hide Google Maps attribution elements */
+.custom-google-map .gm-style-cc,
+.custom-google-map a[href^="https://maps.google.com/maps"],
+.custom-google-map .gmnoprint {
+  display: none !important;
+}
+
+/* Custom info window styling */
 .gm-style .gm-style-iw-c {
   padding: 12px !important;
   box-shadow: 0 2px 7px 1px rgba(0, 0, 0, 0.1);
