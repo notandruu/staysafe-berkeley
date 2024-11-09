@@ -157,6 +157,7 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
             mapTypeControl: false,
             fullscreenControl: false,
             clickableIcons: false, // Disable POI clicks
+            mapTypeId: google.maps.MapTypeId.SATELLITE, // Set map type to satellite
             styles: [
               // Remove Google logo and Terms of Use
               {
