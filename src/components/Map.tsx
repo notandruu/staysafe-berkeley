@@ -24,18 +24,6 @@ const defaultCenter = {
   lng: -122.2590
 };
 
-// Zoom restrictions for Berkeley area
-const MIN_ZOOM = 16; // Most zoomed out (campus level)
-const MAX_ZOOM = 19; // Most zoomed in (building level)
-
-// Berkeley area boundaries (approximate)
-const BERKELEY_BOUNDS = {
-  north: 37.9065, // North boundary
-  south: 37.8485, // South boundary
-  west: -122.3155, // West boundary
-  east: -122.2235, // East boundary
-};
-
 // Custom styles to hide Google's logos and attributions
 const mapStyles = [
   {
@@ -76,19 +64,9 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
     googleMapsApiKey: GOOGLE_MAPS_API_KEY
   });
 
-  // Store map reference and apply restrictions
+  // Store map reference
   const onLoad = useCallback((map: google.maps.Map) => {
     setMap(map);
-    
-    // Set zoom restrictions
-    map.setOptions({
-      minZoom: MIN_ZOOM,
-      maxZoom: MAX_ZOOM,
-      restriction: {
-        latLngBounds: BERKELEY_BOUNDS,
-        strictBounds: false // Allow small amount of panning outside bounds
-      }
-    });
   }, []);
 
   const onUnmount = useCallback(() => {
@@ -118,7 +96,7 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
       
       // Smooth zoom animation
       const currentZoom = map.getZoom() || 14;
-      const targetZoom = Math.min(16, MAX_ZOOM); // Limit to max zoom
+      const targetZoom = 16;
       
       if (currentZoom !== targetZoom) {
         // Only animate zoom if we're not already at the target zoom level
@@ -208,7 +186,7 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
           <GoogleMap
             mapContainerStyle={containerStyle}
             center={defaultCenter}
-            zoom={16}
+            zoom={14}
             onLoad={onLoad}
             onUnmount={onUnmount}
             options={{
@@ -220,9 +198,7 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
               clickableIcons: false,
               mapTypeId: google.maps.MapTypeId.SATELLITE, // Satellite view
               styles: mapStyles,
-              gestureHandling: "greedy",
-              minZoom: MIN_ZOOM,
-              maxZoom: MAX_ZOOM
+              gestureHandling: "greedy"
             }}
           >
             {/* Add red circles for shots fired warnings */}
