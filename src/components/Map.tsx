@@ -25,7 +25,7 @@ const defaultCenter = {
 };
 
 // Zoom restrictions for Berkeley area
-const MIN_ZOOM = 13; // Most zoomed out (city level)
+const MIN_ZOOM = 16; // Most zoomed out (campus level)
 const MAX_ZOOM = 19; // Most zoomed in (building level)
 
 // Berkeley area boundaries (approximate)
@@ -208,7 +208,7 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
           <GoogleMap
             mapContainerStyle={containerStyle}
             center={defaultCenter}
-            zoom={14}
+            zoom={16}
             onLoad={onLoad}
             onUnmount={onUnmount}
             options={{
