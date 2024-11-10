@@ -126,16 +126,18 @@ const Index: React.FC = () => {
           </div>
         ) : (
           <div className="h-full grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Map Container and Severity Filter */}
-            <div className="md:col-span-2 flex flex-col h-[40vh] md:h-full">
-              <div className="flex-1 relative bg-gray-100 rounded-lg border overflow-hidden">
+            {/* Left column - Map Container and Severity Filter */}
+            <div className="md:col-span-2 flex flex-col h-full">
+              {/* Map container with fixed height on desktop */}
+              <div className="relative h-[40vh] md:h-[65vh] bg-gray-100 rounded-lg border overflow-hidden">
                 <Map 
                   warnings={filteredWarnings}
                   selectedWarningId={selectedWarningId}
                   onWarningSelect={handleWarningSelect}
                 />
               </div>
-              {/* Severity Filter - Always visible on both mobile and desktop */}
+              
+              {/* Severity Filter - Always below map */}
               <div className="mt-3">
                 <SeverityFilter 
                   selectedSeverities={selectedSeverities}
@@ -145,7 +147,7 @@ const Index: React.FC = () => {
             </div>
 
             {/* Right Side - Line Graph and Warnings Log */}
-            <div className="flex flex-col h-[calc(60vh-12rem)] md:h-full gap-4">
+            <div className="flex flex-col h-[calc(60vh-8rem)] md:h-full gap-4">
               {/* Line Graph */}
               <div className="flex-none">
                 <LineGraph warnings={warnings} />
