@@ -8,9 +8,11 @@ import { getWarnings } from '@/services/warningService';
 import { useIsMobile } from '@/hooks/use-mobile';
 import SeverityFilter, { SeverityLevel } from '@/components/SeverityFilter';
 import LineGraph from '@/components/LineGraph';
+import { isAfter, subDays } from 'date-fns';
 
 const Index: React.FC = () => {
   const [warnings, setWarnings] = useState<Warning[]>([]);
+  const [recentWarnings, setRecentWarnings] = useState<Warning[]>([]);
   const [selectedWarningId, setSelectedWarningId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showPopup, setShowPopup] = useState(false);
@@ -25,6 +27,13 @@ const Index: React.FC = () => {
         // In a real app, this would be an API call
         const data = getWarnings();
         setWarnings(data);
+        
+        // Filter for warnings from the last 24 hours
+        const last24Hours = subDays(new Date(), 1);
+        const recent = data.filter(warning => 
+          isAfter(new Date(warning.timestamp), last24Hours)
+        );
+        setRecentWarnings(recent);
       } catch (error) {
         console.error('Error loading warnings:', error);
       } finally {
@@ -42,7 +51,7 @@ const Index: React.FC = () => {
   };
 
   // Filter warnings by selected severity levels
-  const filteredWarnings = warnings.filter(warning => {
+  const filteredWarnings = recentWarnings.filter(warning => {
     return selectedSeverities.includes(warning.severity as SeverityLevel);
   });
 
@@ -156,7 +165,7 @@ const Index: React.FC = () => {
               {/* Warnings Log */}
               <div className="flex-1 border rounded-lg overflow-hidden bg-white">
                 <WarningLog 
-                  warnings={filteredWarnings}
+                  warnings={warnings}
                   selectedWarningId={selectedWarningId}
                   onWarningSelect={handleWarningSelect}
                 />
