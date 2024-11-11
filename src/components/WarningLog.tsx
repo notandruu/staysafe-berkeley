@@ -29,6 +29,11 @@ const WarningLog: React.FC<WarningLogProps> = ({
     new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 
+  // Handle click on a warning
+  const handleWarningClick = (warningId: string) => {
+    onWarningSelect(warningId);
+  };
+
   return (
     <div className="h-full flex flex-col">
       <div className="p-4 border-b">
@@ -59,7 +64,7 @@ const WarningLog: React.FC<WarningLogProps> = ({
                     isSelected && "bg-gray-100 hover:bg-gray-100 border-l-4",
                   )}
                   style={{ borderLeftColor: isSelected ? typeColor : 'transparent' }}
-                  onClick={() => onWarningSelect(warning.id)}
+                  onClick={() => handleWarningClick(warning.id)}
                 >
                   <div className="flex items-start gap-3">
                     <div 

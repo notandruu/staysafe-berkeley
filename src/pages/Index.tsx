@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Map from '@/components/Map';
 import WarningLog from '@/components/WarningLog';
@@ -44,10 +43,17 @@ const Index: React.FC = () => {
     loadWarnings();
   }, []);
 
-  // Handle warning selection
+  // Handle warning selection or deselection
   const handleWarningSelect = (warningId: string) => {
-    setSelectedWarningId(warningId);
-    setShowPopup(true);
+    // If the warning is already selected, unselect it
+    if (selectedWarningId === warningId) {
+      setSelectedWarningId(null);
+      setShowPopup(false);
+    } else {
+      // Otherwise, select the new warning
+      setSelectedWarningId(warningId);
+      setShowPopup(true);
+    }
   };
 
   // Filter warnings by selected severity levels
@@ -84,6 +90,7 @@ const Index: React.FC = () => {
   // Close popup
   const handleClosePopup = () => {
     setShowPopup(false);
+    setSelectedWarningId(null);
   };
 
   return (
