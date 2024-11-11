@@ -6,6 +6,7 @@ import { getWarningTypeIcon, getWarningTypeColor, getSeverityColor } from '@/ser
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { AlertTriangle, Clock } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 
 interface WarningLogProps {
   warnings: Warning[];
@@ -34,6 +35,15 @@ const WarningLog: React.FC<WarningLogProps> = ({
     onWarningSelect(warningId);
   };
 
+  // Helper to render the correct icon
+  const renderIcon = (iconName: string) => {
+    const IconComponent = (LucideIcons as any)[iconName.charAt(0).toUpperCase() + iconName.slice(1)];
+    if (IconComponent) {
+      return <IconComponent className="h-4 w-4" />;
+    }
+    return <AlertTriangle className="h-4 w-4" />;
+  };
+
   return (
     <div className="h-full flex flex-col">
       <div className="p-4 border-b">
@@ -52,7 +62,7 @@ const WarningLog: React.FC<WarningLogProps> = ({
             sortedWarnings.map(warning => {
               const isSelected = warning.id === selectedWarningId;
               const timeAgo = formatDistanceToNow(new Date(warning.timestamp), { addSuffix: true });
-              const IconComponent = getWarningTypeIcon(warning.type);
+              const iconName = getWarningTypeIcon(warning.type);
               const typeColor = getWarningTypeColor(warning.type);
               const severityColor = getSeverityColor(warning.severity);
               
@@ -71,7 +81,7 @@ const WarningLog: React.FC<WarningLogProps> = ({
                       className="w-8 h-8 rounded-full flex items-center justify-center mt-0.5"
                       style={{ backgroundColor: `${typeColor}20`, color: typeColor }}
                     >
-                      <IconComponent className="h-4 w-4" />
+                      {renderIcon(iconName)}
                     </div>
                     
                     <div className="flex-1 min-w-0">
