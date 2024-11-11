@@ -1,47 +1,98 @@
+
 import React, { useState, useEffect } from 'react';
 import Map from '@/components/Map';
 import WarningLog from '@/components/WarningLog';
 import WarningPopup from '@/components/WarningPopup';
 import { Warning } from '@/types';
-import { getWarnings } from '@/services/warningService';
+import { getWarnings, refreshWarnings } from '@/services/warningService';
 import { useIsMobile } from '@/hooks/use-mobile';
 import SeverityFilter, { SeverityLevel } from '@/components/SeverityFilter';
 import LineGraph from '@/components/LineGraph';
 import { isAfter, subDays } from 'date-fns';
+import { RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/use-toast';
 
 const Index: React.FC = () => {
   const [warnings, setWarnings] = useState<Warning[]>([]);
   const [recentWarnings, setRecentWarnings] = useState<Warning[]>([]);
   const [selectedWarningId, setSelectedWarningId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [selectedSeverities, setSelectedSeverities] = useState<SeverityLevel[]>(['high', 'medium', 'low']);
   const isMobile = useIsMobile();
 
-  // Load warnings data
-  useEffect(() => {
-    const loadWarnings = () => {
-      setIsLoading(true);
-      try {
-        // In a real app, this would be an API call
-        const data = getWarnings();
-        setWarnings(data);
-        
-        // Filter for warnings from the last 24 hours
-        const last24Hours = subDays(new Date(), 1);
-        const recent = data.filter(warning => 
-          isAfter(new Date(warning.timestamp), last24Hours)
-        );
-        setRecentWarnings(recent);
-      } catch (error) {
-        console.error('Error loading warnings:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Function to load warnings data
+  const loadWarnings = async () => {
+    setIsLoading(true);
+    try {
+      // Fetch warnings from Google Sheets
+      const data = await getWarnings();
+      setWarnings(data);
+      
+      // Filter for warnings from the last 24 hours
+      const last24Hours = subDays(new Date(), 1);
+      const recent = data.filter(warning => 
+        isAfter(new Date(warning.timestamp), last24Hours)
+      );
+      setRecentWarnings(recent);
 
+      // If we were refreshing, show a success toast
+      if (isRefreshing) {
+        toast({
+          title: "Data refreshed",
+          description: `Loaded ${data.length} warnings from Google Sheets`,
+        });
+      }
+    } catch (error) {
+      console.error('Error loading warnings:', error);
+      toast({
+        title: "Error loading data",
+        description: "Could not load warnings. Using sample data instead.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  // Load warnings data on component mount
+  useEffect(() => {
     loadWarnings();
   }, []);
+
+  // Function to manually refresh the data
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      // Force a refresh of the data
+      const data = await refreshWarnings();
+      setWarnings(data);
+      
+      // Filter for warnings from the last 24 hours
+      const last24Hours = subDays(new Date(), 1);
+      const recent = data.filter(warning => 
+        isAfter(new Date(warning.timestamp), last24Hours)
+      );
+      setRecentWarnings(recent);
+      
+      toast({
+        title: "Data refreshed",
+        description: `Loaded ${data.length} warnings from Google Sheets`,
+      });
+    } catch (error) {
+      console.error('Error refreshing warnings:', error);
+      toast({
+        title: "Error refreshing data",
+        description: "Could not refresh warnings. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   // Handle warning selection or deselection
   const handleWarningSelect = (warningId: string) => {
@@ -151,6 +202,20 @@ const Index: React.FC = () => {
                   selectedWarningId={selectedWarningId}
                   onWarningSelect={handleWarningSelect}
                 />
+                
+                {/* Refresh Button */}
+                <div className="absolute top-2 right-2 z-10">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="bg-white shadow-md hover:bg-gray-100"
+                    onClick={handleRefresh}
+                    disabled={isRefreshing}
+                  >
+                    <RefreshCw size={16} className={`mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+                    {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+                  </Button>
+                </div>
               </div>
               
               {/* Severity Filter - Always below map */}

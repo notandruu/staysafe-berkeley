@@ -1,141 +1,183 @@
-
 import { Warning, WarningType } from "@/types";
 import { v4 as uuidv4 } from "uuid";
+import { fetchWarningsFromGoogleSheetCSV } from "./googleSheetsService";
 
-// Sample data - in a real application, this would come from an API or database
-export const getWarnings = (): Warning[] => {
-  return [
-    {
-      id: uuidv4(),
-      timestamp: "2023-11-15T08:30:00Z",
-      type: "earthquake",
-      title: "Minor Earthquake Detected",
-      description: "A 3.2 magnitude earthquake was detected near campus. No damage reported.",
-      location: "Berkeley Hills",
-      coordinates: {
-        latitude: 37.8759,
-        longitude: -122.2543
-      },
-      severity: "low"
+// Configuration for the Google Sheet
+const GOOGLE_SHEET_ID = "ENTER_YOUR_SHEET_ID_HERE"; // Replace with your actual Google Sheet ID
+const GOOGLE_SHEET_GID = "0"; // Replace with your actual sheet GID if needed
+
+// Sample data as fallback if the Google Sheet fetch fails
+const SAMPLE_WARNINGS: Warning[] = [
+  {
+    id: uuidv4(),
+    timestamp: "2023-11-15T08:30:00Z",
+    type: "earthquake",
+    title: "Minor Earthquake Detected",
+    description: "A 3.2 magnitude earthquake was detected near campus. No damage reported.",
+    location: "Berkeley Hills",
+    coordinates: {
+      latitude: 37.8759,
+      longitude: -122.2543
     },
-    {
-      id: uuidv4(),
-      timestamp: "2023-11-14T18:45:00Z",
-      type: "police",
-      title: "Police Activity",
-      description: "Police responding to suspicious activity near Sproul Plaza. Please avoid the area.",
-      location: "Sproul Plaza",
-      coordinates: {
-        latitude: 37.8692,
-        longitude: -122.2590
-      },
-      severity: "medium"
+    severity: "low"
+  },
+  {
+    id: uuidv4(),
+    timestamp: "2023-11-14T18:45:00Z",
+    type: "police",
+    title: "Police Activity",
+    description: "Police responding to suspicious activity near Sproul Plaza. Please avoid the area.",
+    location: "Sproul Plaza",
+    coordinates: {
+      latitude: 37.8692,
+      longitude: -122.2590
     },
-    {
-      id: uuidv4(),
-      timestamp: "2023-11-13T21:30:00Z",
-      type: "violent_crime",
-      title: "Assault Reported",
-      description: "Assault reported near Telegraph Ave. Suspect fled the scene. Police investigating.",
-      location: "Telegraph Avenue",
-      coordinates: {
-        latitude: 37.8671,
-        longitude: -122.2580
-      },
-      severity: "high"
+    severity: "medium"
+  },
+  {
+    id: uuidv4(),
+    timestamp: "2023-11-13T21:30:00Z",
+    type: "violent_crime",
+    title: "Assault Reported",
+    description: "Assault reported near Telegraph Ave. Suspect fled the scene. Police investigating.",
+    location: "Telegraph Avenue",
+    coordinates: {
+      latitude: 37.8671,
+      longitude: -122.2580
     },
-    {
-      id: uuidv4(),
-      timestamp: "2023-11-13T20:15:00Z",
-      type: "shots_fired",
-      title: "Shots Fired",
-      description: "Reports of shots fired. Police on scene. Please avoid the area.",
-      location: "South Campus",
-      coordinates: {
-        latitude: 37.8662,
-        longitude: -122.2565
-      },
-      severity: "high"
+    severity: "high"
+  },
+  {
+    id: uuidv4(),
+    timestamp: "2023-11-13T20:15:00Z",
+    type: "shots_fired",
+    title: "Shots Fired",
+    description: "Reports of shots fired. Police on scene. Please avoid the area.",
+    location: "South Campus",
+    coordinates: {
+      latitude: 37.8662,
+      longitude: -122.2565
     },
-    {
-      id: uuidv4(),
-      timestamp: "2023-11-12T14:20:00Z",
-      type: "fire",
-      title: "Small Fire Reported",
-      description: "Small fire reported in Chemistry Building. Fire department on scene. Building evacuated.",
-      location: "Chemistry Building",
-      coordinates: {
-        latitude: 37.8734,
-        longitude: -122.2555
-      },
-      severity: "medium"
+    severity: "high"
+  },
+  {
+    id: uuidv4(),
+    timestamp: "2023-11-12T14:20:00Z",
+    type: "fire",
+    title: "Small Fire Reported",
+    description: "Small fire reported in Chemistry Building. Fire department on scene. Building evacuated.",
+    location: "Chemistry Building",
+    coordinates: {
+      latitude: 37.8734,
+      longitude: -122.2555
     },
-    {
-      id: uuidv4(),
-      timestamp: "2023-11-12T10:10:00Z",
-      type: "robbery",
-      title: "Robbery Reported",
-      description: "A student was robbed of their laptop near the library. Suspect fled on foot.",
-      location: "Main Library",
-      coordinates: {
-        latitude: 37.8722,
-        longitude: -122.2600
-      },
-      severity: "high"
+    severity: "medium"
+  },
+  {
+    id: uuidv4(),
+    timestamp: "2023-11-12T10:10:00Z",
+    type: "robbery",
+    title: "Robbery Reported",
+    description: "A student was robbed of their laptop near the library. Suspect fled on foot.",
+    location: "Main Library",
+    coordinates: {
+      latitude: 37.8722,
+      longitude: -122.2600
     },
-    {
-      id: uuidv4(),
-      timestamp: "2023-11-10T09:15:00Z",
-      type: "weather",
-      title: "High Wind Advisory",
-      description: "High winds expected throughout the day. Secure loose items and be cautious of falling branches.",
-      location: "Main Campus",
-      coordinates: {
-        latitude: 37.8719,
-        longitude: -122.2614
-      },
-      severity: "low"
+    severity: "high"
+  },
+  {
+    id: uuidv4(),
+    timestamp: "2023-11-10T09:15:00Z",
+    type: "weather",
+    title: "High Wind Advisory",
+    description: "High winds expected throughout the day. Secure loose items and be cautious of falling branches.",
+    location: "Main Campus",
+    coordinates: {
+      latitude: 37.8719,
+      longitude: -122.2614
     },
-    {
-      id: uuidv4(),
-      timestamp: "2023-11-08T22:00:00Z",
-      type: "power",
-      title: "Power Outage",
-      description: "Power outage affecting north side of campus. Estimated restoration time: 2 hours.",
-      location: "North Campus",
-      coordinates: {
-        latitude: 37.8752,
-        longitude: -122.2583
-      },
-      severity: "medium"
+    severity: "low"
+  },
+  {
+    id: uuidv4(),
+    timestamp: "2023-11-08T22:00:00Z",
+    type: "power",
+    title: "Power Outage",
+    description: "Power outage affecting north side of campus. Estimated restoration time: 2 hours.",
+    location: "North Campus",
+    coordinates: {
+      latitude: 37.8752,
+      longitude: -122.2583
     },
-    {
-      id: uuidv4(),
-      timestamp: "2023-11-05T16:30:00Z",
-      type: "protest",
-      title: "Demonstration Advisory",
-      description: "Peaceful demonstration taking place at Sather Gate. Expect increased foot traffic.",
-      location: "Sather Gate",
-      coordinates: {
-        latitude: 37.8702,
-        longitude: -122.2591
-      },
-      severity: "low"
+    severity: "medium"
+  },
+  {
+    id: uuidv4(),
+    timestamp: "2023-11-05T16:30:00Z",
+    type: "protest",
+    title: "Demonstration Advisory",
+    description: "Peaceful demonstration taking place at Sather Gate. Expect increased foot traffic.",
+    location: "Sather Gate",
+    coordinates: {
+      latitude: 37.8702,
+      longitude: -122.2591
     },
-    {
-      id: uuidv4(),
-      timestamp: "2023-11-03T11:45:00Z",
-      type: "hazmat",
-      title: "Chemical Spill",
-      description: "Minor chemical spill in Engineering Building. Hazmat team on site. Area cordoned off.",
-      location: "Engineering Building",
-      coordinates: {
-        latitude: 37.8742,
-        longitude: -122.2584
-      },
-      severity: "high"
-    }
-  ];
+    severity: "low"
+  },
+  {
+    id: uuidv4(),
+    timestamp: "2023-11-03T11:45:00Z",
+    type: "hazmat",
+    title: "Chemical Spill",
+    description: "Minor chemical spill in Engineering Building. Hazmat team on site. Area cordoned off.",
+    location: "Engineering Building",
+    coordinates: {
+      latitude: 37.8742,
+      longitude: -122.2584
+    },
+    severity: "high"
+  }
+];
+
+// Cache the warnings to avoid unnecessary API calls
+let cachedWarnings: Warning[] | null = null;
+let lastFetchTime: number = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+// Get warnings from the Google Sheet or use sample data as fallback
+export const getWarnings = async (): Promise<Warning[]> => {
+  const currentTime = Date.now();
+  
+  // If we have cached warnings and they're not too old, return them
+  if (cachedWarnings && (currentTime - lastFetchTime) < CACHE_DURATION) {
+    return cachedWarnings;
+  }
+  
+  try {
+    // Try to fetch warnings from Google Sheet
+    const warnings = await fetchWarningsFromGoogleSheetCSV(GOOGLE_SHEET_ID, GOOGLE_SHEET_GID);
+    
+    // Update cache
+    cachedWarnings = warnings;
+    lastFetchTime = currentTime;
+    
+    return warnings;
+  } catch (error) {
+    console.error("Error fetching warnings from Google Sheet, using sample data:", error);
+    
+    // Use sample data as fallback
+    return SAMPLE_WARNINGS;
+  }
+};
+
+// Force a refresh of the warnings data
+export const refreshWarnings = async (): Promise<Warning[]> => {
+  // Reset the cache
+  cachedWarnings = null;
+  
+  // Fetch fresh warnings
+  return await getWarnings();
 };
 
 export const getWarningTypeIcon = (type: WarningType): string => {

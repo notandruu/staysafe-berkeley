@@ -71,7 +71,7 @@ const WarningLog: React.FC<WarningLogProps> = ({
                       className="w-8 h-8 rounded-full flex items-center justify-center mt-0.5"
                       style={{ backgroundColor: `${typeColor}20`, color: typeColor }}
                     >
-                      <span className="lucide lucide-{IconComponent}" />
+                      <IconComponent className="h-4 w-4" />
                     </div>
                     
                     <div className="flex-1 min-w-0">
