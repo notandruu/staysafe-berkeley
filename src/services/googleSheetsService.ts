@@ -15,12 +15,69 @@ interface GoogleSheetWarningRow {
   severity: string;
 }
 
+// Map to convert spreadsheet type names to our application's WarningType format
+const typeMapping: Record<string, WarningType> = {
+  'earthquake': 'earthquake',
+  'fire': 'fire',
+  'weather': 'weather',
+  'police': 'police',
+  'hazmat': 'hazmat',
+  'power': 'power',
+  'protest': 'protest',
+  'violent crime': 'violent_crime',
+  'shots fired': 'shots_fired',
+  'robbery': 'robbery',
+  'other': 'other'
+};
+
+// Helper function to normalize type strings from spreadsheet
+const normalizeType = (typeStr: string): WarningType => {
+  // Convert to lowercase for case-insensitive matching
+  const normalizedStr = typeStr.toLowerCase().trim();
+  
+  // Try to find in our mapping
+  if (typeMapping[normalizedStr]) {
+    return typeMapping[normalizedStr];
+  }
+  
+  // If not found, handle common cases
+  if (normalizedStr.includes('earthquake')) return 'earthquake';
+  if (normalizedStr.includes('fire')) return 'fire';
+  if (normalizedStr.includes('weather')) return 'weather';
+  if (normalizedStr.includes('police')) return 'police';
+  if (normalizedStr.includes('hazmat')) return 'hazmat';
+  if (normalizedStr.includes('power')) return 'power';
+  if (normalizedStr.includes('protest')) return 'protest';
+  if (normalizedStr.includes('violent') || normalizedStr.includes('assault')) return 'violent_crime';
+  if (normalizedStr.includes('shot') || normalizedStr.includes('gun')) return 'shots_fired';
+  if (normalizedStr.includes('robbery') || normalizedStr.includes('theft')) return 'robbery';
+  
+  // Default to 'other' if no match
+  console.warn(`Unknown warning type "${typeStr}" - defaulting to "other"`);
+  return 'other';
+};
+
 // Convert a Google Sheet row to our Warning type
 const convertRowToWarning = (row: GoogleSheetWarningRow): Warning => {
+  // Normalize warning type from spreadsheet
+  const normalizedType = normalizeType(row.type);
+  
+  // Normalize severity to match our expected values
+  let normalizedSeverity: Warning['severity'] = 'medium';
+  const severityStr = row.severity.toLowerCase().trim();
+  
+  if (['low', 'minor', 'light', '1'].includes(severityStr)) {
+    normalizedSeverity = 'low';
+  } else if (['high', 'major', 'severe', 'critical', '3'].includes(severityStr)) {
+    normalizedSeverity = 'high';
+  } else if (['medium', 'moderate', 'mid', '2'].includes(severityStr)) {
+    normalizedSeverity = 'medium';
+  }
+  
   return {
     id: uuidv4(), // Generate a unique ID for each warning
     timestamp: row.timestamp,
-    type: row.type as WarningType,
+    type: normalizedType,
     title: row.title,
     description: row.description,
     location: row.location,
@@ -28,7 +85,7 @@ const convertRowToWarning = (row: GoogleSheetWarningRow): Warning => {
       latitude: parseFloat(row.latitude),
       longitude: parseFloat(row.longitude)
     },
-    severity: row.severity as Warning['severity']
+    severity: normalizedSeverity
   };
 };
 
@@ -142,12 +199,18 @@ export const fetchWarningsFromGoogleSheetCSV = async (
         warningRow[headers[j]] = row[j];
       }
       
+      // Debug: Log the warning row to see what's coming from spreadsheet
+      console.log('Processing row from spreadsheet:', warningRow);
+      
       // Validate and convert the row to a Warning object
       if (isValidWarningRow(warningRow)) {
         warnings.push(convertRowToWarning(warningRow));
+      } else {
+        console.warn('Invalid warning row:', warningRow);
       }
     }
     
+    console.log('Processed warnings from spreadsheet:', warnings);
     return warnings;
   } catch (error) {
     console.error('Error fetching warnings from Google Sheet CSV:', error);
