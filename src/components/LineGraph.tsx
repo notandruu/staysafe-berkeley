@@ -20,10 +20,10 @@ const LineGraph: React.FC<LineGraphProps> = ({ warnings, days = 7 }) => {
     const today = new Date();
     const data: DayData[] = [];
     
-    // Create entries for each of the last 7 days
+    // Create entries for each of the days in the selected range
     for (let i = days - 1; i >= 0; i--) {
       const date = subDays(today, i);
-      const formattedDate = format(date, 'MMM dd');
+      const formattedDate = format(date, days > 30 ? 'MMM dd' : 'MM/dd');
       const dateString = format(date, 'yyyy-MM-dd');
       
       data.push({
@@ -40,7 +40,9 @@ const LineGraph: React.FC<LineGraphProps> = ({ warnings, days = 7 }) => {
       
       if (daysDiff >= 0 && daysDiff < days) {
         const index = days - 1 - daysDiff;
-        data[index].count += 1;
+        if (index >= 0 && index < data.length) {
+          data[index].count += 1;
+        }
       }
     });
     
@@ -48,10 +50,18 @@ const LineGraph: React.FC<LineGraphProps> = ({ warnings, days = 7 }) => {
   };
 
   const dailyWarnings = calculateDailyWarnings();
+  
+  // Get title based on number of days
+  const getTitle = () => {
+    if (days >= 90) return '3-Month Warning Trend';
+    if (days >= 30) return '30-Day Warning Trend';
+    if (days >= 7) return '7-Day Warning Trend';
+    return '24-Hour Warning Trend';
+  };
 
   return (
     <div className="bg-white rounded-lg border shadow-sm p-4 h-64">
-      <h3 className="text-lg font-semibold mb-2">7-Day Warning Trend</h3>
+      <h3 className="text-lg font-semibold mb-2">{getTitle()}</h3>
       <ResponsiveContainer width="100%" height="85%">
         <LineChart
           data={dailyWarnings}
@@ -61,6 +71,7 @@ const LineGraph: React.FC<LineGraphProps> = ({ warnings, days = 7 }) => {
           <XAxis 
             dataKey="formattedDate" 
             tick={{ fontSize: 12 }}
+            interval={days > 30 ? "preserveStartEnd" : 0}
           />
           <YAxis 
             allowDecimals={false} 

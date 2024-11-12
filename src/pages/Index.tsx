@@ -7,20 +7,22 @@ import { Warning } from '@/types';
 import { getWarnings, refreshWarnings } from '@/services/warningService';
 import { useIsMobile } from '@/hooks/use-mobile';
 import SeverityFilter, { SeverityLevel } from '@/components/SeverityFilter';
+import DateRangeFilter, { DateRange } from '@/components/DateRangeFilter';
 import LineGraph from '@/components/LineGraph';
-import { isAfter, subDays } from 'date-fns';
+import { isAfter, subDays, subMonths } from 'date-fns';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 
 const Index: React.FC = () => {
   const [warnings, setWarnings] = useState<Warning[]>([]);
-  const [recentWarnings, setRecentWarnings] = useState<Warning[]>([]);
+  const [filteredWarnings, setFilteredWarnings] = useState<Warning[]>([]);
   const [selectedWarningId, setSelectedWarningId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [selectedSeverities, setSelectedSeverities] = useState<SeverityLevel[]>(['high', 'medium', 'low']);
+  const [selectedDateRange, setSelectedDateRange] = useState<DateRange>('24h');
   const isMobile = useIsMobile();
 
   // Function to load warnings data
@@ -31,12 +33,8 @@ const Index: React.FC = () => {
       const data = await getWarnings();
       setWarnings(data);
       
-      // Filter for warnings from the last 24 hours
-      const last24Hours = subDays(new Date(), 1);
-      const recent = data.filter(warning => 
-        isAfter(new Date(warning.timestamp), last24Hours)
-      );
-      setRecentWarnings(recent);
+      // Apply filters
+      applyFilters(data, selectedSeverities, selectedDateRange);
 
       // If we were refreshing, show a success toast
       if (isRefreshing) {
@@ -58,10 +56,56 @@ const Index: React.FC = () => {
     }
   };
 
+  // Apply both severity and date range filters
+  const applyFilters = (allWarnings: Warning[], severities: SeverityLevel[], dateRange: DateRange) => {
+    // First, filter by date range
+    const dateFiltered = filterByDateRange(allWarnings, dateRange);
+    
+    // Then apply severity filter
+    const result = dateFiltered.filter(warning => 
+      severities.includes(warning.severity as SeverityLevel)
+    );
+    
+    setFilteredWarnings(result);
+  };
+
+  // Filter warnings by date range
+  const filterByDateRange = (allWarnings: Warning[], range: DateRange): Warning[] => {
+    const now = new Date();
+    let cutoffDate: Date;
+    
+    switch (range) {
+      case '7d':
+        cutoffDate = subDays(now, 7);
+        break;
+      case '30d':
+        cutoffDate = subDays(now, 30);
+        break;
+      case '90d':
+        cutoffDate = subMonths(now, 3);
+        break;
+      case '24h':
+      default:
+        cutoffDate = subDays(now, 1);
+        break;
+    }
+    
+    return allWarnings.filter(warning => 
+      isAfter(new Date(warning.timestamp), cutoffDate)
+    );
+  };
+
   // Load warnings data on component mount
   useEffect(() => {
     loadWarnings();
   }, []);
+
+  // Apply filters when dependencies change
+  useEffect(() => {
+    if (warnings.length > 0) {
+      applyFilters(warnings, selectedSeverities, selectedDateRange);
+    }
+  }, [warnings, selectedSeverities, selectedDateRange]);
 
   // Function to manually refresh the data
   const handleRefresh = async () => {
@@ -71,12 +115,8 @@ const Index: React.FC = () => {
       const data = await refreshWarnings();
       setWarnings(data);
       
-      // Filter for warnings from the last 24 hours
-      const last24Hours = subDays(new Date(), 1);
-      const recent = data.filter(warning => 
-        isAfter(new Date(warning.timestamp), last24Hours)
-      );
-      setRecentWarnings(recent);
+      // Apply filters to the new data
+      applyFilters(data, selectedSeverities, selectedDateRange);
       
       toast({
         title: "Data refreshed",
@@ -107,28 +147,18 @@ const Index: React.FC = () => {
     }
   };
 
-  // Filter warnings by selected severity levels
-  const filteredWarnings = recentWarnings.filter(warning => {
-    return selectedSeverities.includes(warning.severity as SeverityLevel);
-  });
-
-  // Get the selected warning
-  const selectedWarning = selectedWarningId 
-    ? warnings.find(w => w.id === selectedWarningId) || null 
-    : null;
-
   // Handle severity filter change
   const handleSeverityChange = (severity: SeverityLevel, isChecked: boolean) => {
+    let newSeverities: SeverityLevel[];
+    
     if (isChecked) {
       // Add severity if it's not already in the array
-      setSelectedSeverities(prev => 
-        prev.includes(severity) ? prev : [...prev, severity]
-      );
+      newSeverities = selectedSeverities.includes(severity) 
+        ? selectedSeverities 
+        : [...selectedSeverities, severity];
     } else {
       // Remove severity from the array
-      setSelectedSeverities(prev => 
-        prev.filter(s => s !== severity)
-      );
+      newSeverities = selectedSeverities.filter(s => s !== severity);
 
       // If the selected warning is of the severity being filtered out, close the popup
       if (selectedWarning && selectedWarning.severity === severity) {
@@ -136,6 +166,13 @@ const Index: React.FC = () => {
         setSelectedWarningId(null);
       }
     }
+    
+    setSelectedSeverities(newSeverities);
+  };
+
+  // Handle date range filter change
+  const handleDateRangeChange = (range: DateRange) => {
+    setSelectedDateRange(range);
   };
 
   // Close popup
@@ -143,6 +180,11 @@ const Index: React.FC = () => {
     setShowPopup(false);
     setSelectedWarningId(null);
   };
+
+  // Get the selected warning
+  const selectedWarning = selectedWarningId 
+    ? warnings.find(w => w.id === selectedWarningId) || null 
+    : null;
 
   return (
     <div className="h-screen flex flex-col bg-background">
@@ -193,10 +235,10 @@ const Index: React.FC = () => {
           </div>
         ) : (
           <div className="h-full grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Left column - Map Container and Severity Filter */}
+            {/* Left column - Map Container and Filters */}
             <div className="md:col-span-2 flex flex-col h-full">
               {/* Map container with fixed height on desktop */}
-              <div className="relative h-[40vh] md:h-[65vh] bg-gray-100 rounded-lg border overflow-hidden">
+              <div className="relative h-[40vh] md:h-[60vh] bg-gray-100 rounded-lg border overflow-hidden">
                 <Map 
                   warnings={filteredWarnings}
                   selectedWarningId={selectedWarningId}
@@ -218,11 +260,15 @@ const Index: React.FC = () => {
                 </div>
               </div>
               
-              {/* Severity Filter - Always below map */}
-              <div className="mt-3">
+              {/* Filters - Side by side on desktop, stacked on mobile */}
+              <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
                 <SeverityFilter 
                   selectedSeverities={selectedSeverities}
                   onSeverityChange={handleSeverityChange}
+                />
+                <DateRangeFilter
+                  selectedRange={selectedDateRange}
+                  onRangeChange={handleDateRangeChange}
                 />
               </div>
             </div>
@@ -231,7 +277,10 @@ const Index: React.FC = () => {
             <div className="flex flex-col h-[calc(60vh-8rem)] md:h-full gap-4">
               {/* Line Graph */}
               <div className="flex-none">
-                <LineGraph warnings={warnings} />
+                <LineGraph 
+                  warnings={warnings} 
+                  days={selectedDateRange === '90d' ? 90 : selectedDateRange === '30d' ? 30 : selectedDateRange === '7d' ? 7 : 7}
+                />
               </div>
               
               {/* Warnings Log */}
@@ -240,6 +289,7 @@ const Index: React.FC = () => {
                   warnings={warnings}
                   selectedWarningId={selectedWarningId}
                   onWarningSelect={handleWarningSelect}
+                  dateRange={selectedDateRange}
                 />
               </div>
             </div>

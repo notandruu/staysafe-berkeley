@@ -1,32 +1,57 @@
 
 import React from 'react';
 import { Warning } from '@/types';
-import { formatDistanceToNow, isAfter, subDays } from 'date-fns';
+import { formatDistanceToNow, isAfter, subDays, subMonths } from 'date-fns';
 import { getWarningTypeIcon, getWarningTypeColor, getSeverityColor } from '@/services/warningService';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { AlertTriangle, Clock } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
+import { DateRange } from '@/components/DateRangeFilter';
 
 interface WarningLogProps {
   warnings: Warning[];
   selectedWarningId: string | null;
   onWarningSelect: (warningId: string) => void;
+  dateRange?: DateRange;
 }
 
 const WarningLog: React.FC<WarningLogProps> = ({ 
   warnings, 
   selectedWarningId, 
-  onWarningSelect 
+  onWarningSelect,
+  dateRange = '24h'
 }) => {
-  // Filter warnings from the last 24 hours
-  const last24Hours = subDays(new Date(), 1);
-  const recentWarnings = warnings.filter(warning => 
-    isAfter(new Date(warning.timestamp), last24Hours)
-  );
+  // Filter warnings based on date range
+  const getFilteredWarnings = () => {
+    const now = new Date();
+    let cutoffDate: Date;
+    
+    switch (dateRange) {
+      case '7d':
+        cutoffDate = subDays(now, 7);
+        break;
+      case '30d':
+        cutoffDate = subDays(now, 30);
+        break;
+      case '90d':
+        cutoffDate = subMonths(now, 3);
+        break;
+      case '24h':
+      default:
+        cutoffDate = subDays(now, 1);
+        break;
+    }
+    
+    return warnings.filter(warning => 
+      isAfter(new Date(warning.timestamp), cutoffDate)
+    );
+  };
+
+  const filteredWarnings = getFilteredWarnings();
 
   // Sort warnings by timestamp (most recent first)
-  const sortedWarnings = [...recentWarnings].sort((a, b) => 
+  const sortedWarnings = [...filteredWarnings].sort((a, b) => 
     new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 
@@ -44,15 +69,37 @@ const WarningLog: React.FC<WarningLogProps> = ({
     return <AlertTriangle className="h-4 w-4" />;
   };
 
+  // Get title text based on date range
+  const getLogTitle = () => {
+    switch (dateRange) {
+      case '7d': return 'Last 7 Days Warnings';
+      case '30d': return 'Last 30 Days Warnings';
+      case '90d': return 'Last 3 Months Warnings';
+      case '24h':
+      default: return 'Recent Warnings';
+    }
+  };
+
+  // Get subtitle text based on date range
+  const getLogSubtitle = () => {
+    switch (dateRange) {
+      case '7d': return 'Last 7 days - Click to view details';
+      case '30d': return 'Last 30 days - Click to view details';
+      case '90d': return 'Last 3 months - Click to view details';
+      case '24h':
+      default: return 'Last 24 hours - Click to view details';
+    }
+  };
+
   return (
     <div className="h-full flex flex-col">
       <div className="p-4 border-b">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <AlertTriangle size={18} className="text-amber-500" />
-          <span>Recent Warnings</span>
+          <span>{getLogTitle()}</span>
         </h2>
         <p className="text-sm text-muted-foreground">
-          Last 24 hours - Click to view details
+          {getLogSubtitle()}
         </p>
       </div>
       
@@ -111,7 +158,7 @@ const WarningLog: React.FC<WarningLogProps> = ({
             })
           ) : (
             <div className="p-6 text-center text-gray-500">
-              <p>No warnings in the last 24 hours</p>
+              <p>No warnings in the selected time period</p>
             </div>
           )}
         </div>
