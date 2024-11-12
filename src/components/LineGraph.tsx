@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { differenceInDays, format, subDays } from 'date-fns';
+import { differenceInDays, format, subDays, differenceInHours, addHours } from 'date-fns';
 import { Warning } from '@/types';
 
 interface LineGraphProps {
@@ -9,16 +9,49 @@ interface LineGraphProps {
   days?: number;
 }
 
-interface DayData {
+interface DataPoint {
   date: string;
   count: number;
   formattedDate: string;
 }
 
 const LineGraph: React.FC<LineGraphProps> = ({ warnings, days = 7 }) => {
-  const calculateDailyWarnings = (): DayData[] => {
+  const calculate24HourWarnings = (): DataPoint[] => {
+    const now = new Date();
+    const data: DataPoint[] = [];
+    
+    // Create entries for each hour in the past 24 hours
+    for (let i = 23; i >= 0; i--) {
+      const time = addHours(now, -i);
+      const formattedTime = format(time, 'HH:mm');
+      const dateString = format(time, 'yyyy-MM-dd HH:mm');
+      
+      data.push({
+        date: dateString,
+        count: 0,
+        formattedDate: formattedTime
+      });
+    }
+    
+    // Count warnings for each hour
+    warnings.forEach(warning => {
+      const warningDate = new Date(warning.timestamp);
+      const hoursDiff = differenceInHours(now, warningDate);
+      
+      if (hoursDiff >= 0 && hoursDiff < 24) {
+        const index = 23 - hoursDiff;
+        if (index >= 0 && index < data.length) {
+          data[index].count += 1;
+        }
+      }
+    });
+    
+    return data;
+  };
+  
+  const calculateDailyWarnings = (): DataPoint[] => {
     const today = new Date();
-    const data: DayData[] = [];
+    const data: DataPoint[] = [];
     
     // Create entries for each of the days in the selected range
     for (let i = days - 1; i >= 0; i--) {
@@ -49,14 +82,15 @@ const LineGraph: React.FC<LineGraphProps> = ({ warnings, days = 7 }) => {
     return data;
   };
 
-  const dailyWarnings = calculateDailyWarnings();
+  // Choose the right data based on the days parameter
+  const graphData = days === 1 ? calculate24HourWarnings() : calculateDailyWarnings();
   
   // Get title based on number of days
   const getTitle = () => {
+    if (days === 1) return '24-Hour Warning Trend';
     if (days >= 90) return '3-Month Warning Trend';
     if (days >= 30) return '30-Day Warning Trend';
-    if (days >= 7) return '7-Day Warning Trend';
-    return '24-Hour Warning Trend';
+    return '7-Day Warning Trend';
   };
 
   return (
@@ -64,14 +98,14 @@ const LineGraph: React.FC<LineGraphProps> = ({ warnings, days = 7 }) => {
       <h3 className="text-lg font-semibold mb-2">{getTitle()}</h3>
       <ResponsiveContainer width="100%" height="85%">
         <LineChart
-          data={dailyWarnings}
+          data={graphData}
           margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis 
             dataKey="formattedDate" 
             tick={{ fontSize: 12 }}
-            interval={days > 30 ? "preserveStartEnd" : 0}
+            interval={days > 30 ? "preserveStartEnd" : (days === 1 ? 3 : 0)}
           />
           <YAxis 
             allowDecimals={false} 
@@ -81,7 +115,7 @@ const LineGraph: React.FC<LineGraphProps> = ({ warnings, days = 7 }) => {
             contentStyle={{ backgroundColor: 'white', borderRadius: '0.375rem', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}
             labelStyle={{ fontWeight: 'bold' }}
             formatter={(value) => [`${value} warnings`, 'Count']}
-            labelFormatter={(label) => `Date: ${label}`}
+            labelFormatter={(label) => `${days === 1 ? 'Time' : 'Date'}: ${label}`}
           />
           <Line 
             type="monotone" 

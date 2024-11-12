@@ -186,6 +186,17 @@ const Index: React.FC = () => {
     ? warnings.find(w => w.id === selectedWarningId) || null 
     : null;
 
+  // Convert date range to days for LineGraph
+  const getDateRangeInDays = (): number => {
+    switch (selectedDateRange) {
+      case '90d': return 90;
+      case '30d': return 30;
+      case '7d': return 7;
+      case '24h': return 1; // 1 day (24 hours)
+      default: return 7;
+    }
+  };
+
   return (
     <div className="h-screen flex flex-col bg-background">
       {/* Header with UC Berkeley Branding */}
@@ -279,7 +290,7 @@ const Index: React.FC = () => {
               <div className="flex-none">
                 <LineGraph 
                   warnings={warnings} 
-                  days={selectedDateRange === '90d' ? 90 : selectedDateRange === '30d' ? 30 : selectedDateRange === '7d' ? 7 : 7}
+                  days={getDateRangeInDays()}
                 />
               </div>
               
