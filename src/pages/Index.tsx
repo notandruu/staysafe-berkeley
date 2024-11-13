@@ -34,7 +34,8 @@ const Index: React.FC = () => {
       setWarnings(data);
       
       // Apply filters
-      applyFilters(data, selectedSeverities, selectedDateRange);
+      const filtered = applyFilters(data, selectedSeverities, selectedDateRange);
+      setFilteredWarnings(filtered);
 
       // If we were refreshing, show a success toast
       if (isRefreshing) {
@@ -57,7 +58,7 @@ const Index: React.FC = () => {
   };
 
   // Apply both severity and date range filters
-  const applyFilters = (allWarnings: Warning[], severities: SeverityLevel[], dateRange: DateRange) => {
+  const applyFilters = (allWarnings: Warning[], severities: SeverityLevel[], dateRange: DateRange): Warning[] => {
     // First, filter by date range
     const dateFiltered = filterByDateRange(allWarnings, dateRange);
     
@@ -66,7 +67,7 @@ const Index: React.FC = () => {
       severities.includes(warning.severity as SeverityLevel)
     );
     
-    setFilteredWarnings(result);
+    return result;
   };
 
   // Filter warnings by date range
@@ -90,9 +91,10 @@ const Index: React.FC = () => {
         break;
     }
     
-    return allWarnings.filter(warning => 
-      isAfter(new Date(warning.timestamp), cutoffDate)
-    );
+    return allWarnings.filter(warning => {
+      const warningDate = new Date(warning.timestamp);
+      return isAfter(warningDate, cutoffDate);
+    });
   };
 
   // Load warnings data on component mount
@@ -103,7 +105,11 @@ const Index: React.FC = () => {
   // Apply filters when dependencies change
   useEffect(() => {
     if (warnings.length > 0) {
-      applyFilters(warnings, selectedSeverities, selectedDateRange);
+      const filtered = applyFilters(warnings, selectedSeverities, selectedDateRange);
+      setFilteredWarnings(filtered);
+      
+      // Log for debugging
+      console.log(`Filtered to ${filtered.length} warnings from ${warnings.length} total`);
     }
   }, [warnings, selectedSeverities, selectedDateRange]);
 
@@ -116,7 +122,8 @@ const Index: React.FC = () => {
       setWarnings(data);
       
       // Apply filters to the new data
-      applyFilters(data, selectedSeverities, selectedDateRange);
+      const filtered = applyFilters(data, selectedSeverities, selectedDateRange);
+      setFilteredWarnings(filtered);
       
       toast({
         title: "Data refreshed",

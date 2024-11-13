@@ -175,6 +175,9 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
     );
   }
 
+  // Log warnings count for debugging
+  console.log(`Rendering map with ${warnings.length} warnings`);
+
   return (
     <div className="relative w-full h-full rounded-lg overflow-hidden">
       <div ref={mapRef} className="w-full h-full">
@@ -196,7 +199,7 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
               mapTypeControl: false,
               fullscreenControl: false,
               clickableIcons: false,
-              mapTypeId: google.maps.MapTypeId.SATELLITE, // Satellite view
+              mapTypeId: google.maps.MapTypeId.ROADMAP, // Changed to ROADMAP for clarity
               styles: mapStyles,
               gestureHandling: "greedy"
             }}
