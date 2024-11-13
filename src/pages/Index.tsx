@@ -58,14 +58,22 @@ const Index: React.FC = () => {
   };
 
   // Apply both severity and date range filters
-  const applyFilters = (allWarnings: Warning[], severities: SeverityLevel[], dateRange: DateRange): Warning[] => {
+  const applyFilters = (allWarnings: Warning[], severities: SeverityLevel[], dateRange: DateRange, includeWarningId: string | null = null): Warning[] => {
     // First, filter by date range
     const dateFiltered = filterByDateRange(allWarnings, dateRange);
     
     // Then apply severity filter
-    const result = dateFiltered.filter(warning => 
+    let result = dateFiltered.filter(warning => 
       severities.includes(warning.severity as SeverityLevel)
     );
+    
+    // If there's a selected warning that's not in the filtered results, add it
+    if (includeWarningId) {
+      const selectedWarning = allWarnings.find(w => w.id === includeWarningId);
+      if (selectedWarning && !result.some(w => w.id === includeWarningId)) {
+        result = [...result, selectedWarning];
+      }
+    }
     
     return result;
   };
@@ -105,13 +113,13 @@ const Index: React.FC = () => {
   // Apply filters when dependencies change
   useEffect(() => {
     if (warnings.length > 0) {
-      const filtered = applyFilters(warnings, selectedSeverities, selectedDateRange);
+      const filtered = applyFilters(warnings, selectedSeverities, selectedDateRange, selectedWarningId);
       setFilteredWarnings(filtered);
       
       // Log for debugging
       console.log(`Filtered to ${filtered.length} warnings from ${warnings.length} total`);
     }
-  }, [warnings, selectedSeverities, selectedDateRange]);
+  }, [warnings, selectedSeverities, selectedDateRange, selectedWarningId]);
 
   // Function to manually refresh the data
   const handleRefresh = async () => {
@@ -122,7 +130,7 @@ const Index: React.FC = () => {
       setWarnings(data);
       
       // Apply filters to the new data
-      const filtered = applyFilters(data, selectedSeverities, selectedDateRange);
+      const filtered = applyFilters(data, selectedSeverities, selectedDateRange, selectedWarningId);
       setFilteredWarnings(filtered);
       
       toast({
