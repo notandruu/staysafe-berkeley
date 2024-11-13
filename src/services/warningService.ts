@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { fetchWarningsFromGoogleSheetCSV } from "./googleSheetsService";
 
 // Configuration for the Google Sheet
-const GOOGLE_SHEET_ID = "1UdGeNJr0SaANwzE7CNGgtIPqrKR55VAnqGdEko5H9xA"; // Your Google Sheet ID
+const GOOGLE_SHEET_ID = "1AITJJqyHgDZ6xDNkfVoCbOjykv_a7RhlRPqrUGVxTsE"; // Your Google Sheet ID
 const GOOGLE_SHEET_GID = "0"; // Replace with your actual sheet GID if needed
 
 // Sample data as fallback if the Google Sheet fetch fails
