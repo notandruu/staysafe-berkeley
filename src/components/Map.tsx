@@ -14,6 +14,13 @@ interface MapProps {
   onWarningSelect: (warningId: string) => void;
 }
 
+interface GeocodedWarning extends Warning {
+  geocodedPosition?: {
+    lat: number;
+    lng: number;
+  };
+}
+
 const containerStyle = {
   width: '100%',
   height: '100%'
@@ -56,13 +63,74 @@ const mapStyles = [
 const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect }) => {
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [activeMarker, setActiveMarker] = useState<string | null>(null);
+  const [geocodedWarnings, setGeocodedWarnings] = useState<GeocodedWarning[]>([]);
   const mapRef = useRef<HTMLDivElement>(null);
+  const geocoder = useRef<google.maps.Geocoder | null>(null);
   
   // Load the Google Maps JS API with your API key
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: GOOGLE_MAPS_API_KEY
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    libraries: ['places']
   });
+
+  // Initialize geocoder when maps API is loaded
+  useEffect(() => {
+    if (isLoaded && !geocoder.current) {
+      geocoder.current = new google.maps.Geocoder();
+    }
+  }, [isLoaded]);
+
+  // Geocode warnings when they change
+  useEffect(() => {
+    if (!isLoaded || !geocoder.current) return;
+
+    const geocodeWarnings = async () => {
+      const results: GeocodedWarning[] = [];
+
+      for (const warning of warnings) {
+        try {
+          // Add "UC Berkeley" to the location for better accuracy
+          const response = await geocoder.current!.geocode({
+            address: `${warning.location}, UC Berkeley, Berkeley, CA`
+          });
+
+          if (response.results[0]) {
+            results.push({
+              ...warning,
+              geocodedPosition: {
+                lat: response.results[0].geometry.location.lat(),
+                lng: response.results[0].geometry.location.lng()
+              }
+            });
+          } else {
+            // Fallback to provided coordinates if geocoding fails
+            results.push({
+              ...warning,
+              geocodedPosition: {
+                lat: warning.coordinates.latitude,
+                lng: warning.coordinates.longitude
+              }
+            });
+          }
+        } catch (error) {
+          console.error(`Error geocoding warning ${warning.id}:`, error);
+          // Fallback to provided coordinates
+          results.push({
+            ...warning,
+            geocodedPosition: {
+              lat: warning.coordinates.latitude,
+              lng: warning.coordinates.longitude
+            }
+          });
+        }
+      }
+
+      setGeocodedWarnings(results);
+    };
+
+    geocodeWarnings();
+  }, [warnings, isLoaded]);
 
   // Store map reference
   const onLoad = useCallback((map: google.maps.Map) => {
@@ -76,31 +144,24 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
   // Apply custom styles to hide Google attribution
   useEffect(() => {
     if (mapRef.current) {
-      // Add a custom class to help target Google elements
       mapRef.current.classList.add('custom-google-map');
     }
   }, []);
 
   // Handle reset map view when warnings or filters change
   useEffect(() => {
-    // Only reset view when there are warnings but no selected warning
-    if (map && warnings.length > 0 && !selectedWarningId) {
-      // Get all warning coordinates
+    if (map && geocodedWarnings.length > 0 && !selectedWarningId) {
       const bounds = new google.maps.LatLngBounds();
       
-      // Add each warning location to bounds
-      warnings.forEach(warning => {
-        bounds.extend({
-          lat: warning.coordinates.latitude,
-          lng: warning.coordinates.longitude
-        });
+      geocodedWarnings.forEach(warning => {
+        if (warning.geocodedPosition) {
+          bounds.extend(warning.geocodedPosition);
+        }
       });
       
-      // Pan to fit all warnings
       if (!bounds.isEmpty()) {
         map.fitBounds(bounds);
         
-        // Add some padding
         const listener = google.maps.event.addListenerOnce(map, 'bounds_changed', () => {
           map.setZoom(Math.min(15, Math.max(map.getZoom() || 14, 12)));
         });
@@ -109,34 +170,27 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
           google.maps.event.removeListener(listener);
         };
       } else {
-        // If somehow bounds are empty, go to default center
         map.setCenter(defaultCenter);
         map.setZoom(14);
       }
     }
-  }, [map, warnings, selectedWarningId]);
+  }, [map, geocodedWarnings, selectedWarningId]);
   
   // Handle selected warning with smooth animation
   useEffect(() => {
     if (!map || !selectedWarningId) return;
     
-    const warning = warnings.find(w => w.id === selectedWarningId);
+    const warning = geocodedWarnings.find(w => w.id === selectedWarningId);
     
-    if (warning) {
-      // Smooth pan to the marker position
-      map.panTo({
-        lat: warning.coordinates.latitude,
-        lng: warning.coordinates.longitude
-      });
+    if (warning?.geocodedPosition) {
+      map.panTo(warning.geocodedPosition);
       
-      // Smooth zoom animation
       const currentZoom = map.getZoom() || 14;
       const targetZoom = 16;
       
       if (currentZoom !== targetZoom) {
-        // Only animate zoom if we're not already at the target zoom level
-        const steps = 10; // Number of steps in the animation
-        const delay = 20; // Milliseconds between steps
+        const steps = 10;
+        const delay = 20;
         const zoomStep = (targetZoom - currentZoom) / steps;
         
         let step = 0;
@@ -151,12 +205,11 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
         }, delay);
       }
       
-      // Show info window with a slight delay to let the animation finish
       setTimeout(() => {
         setActiveMarker(selectedWarningId);
       }, 300);
     }
-  }, [selectedWarningId, warnings, map]);
+  }, [selectedWarningId, geocodedWarnings, map]);
 
   const handleMarkerClick = (warningId: string) => {
     onWarningSelect(warningId);
@@ -178,22 +231,17 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
     const isSelected = warning.id === selectedWarningId;
     const isHighDanger = isHighDangerWarning(warning.type);
     
-    // Base marker properties
-    const scale = isSelected ? 10 : (isHighDanger ? 9 : 8);
-    const zIndex = isHighDanger ? 10 : 1;
-    const animation = isSelected 
-      ? google.maps.Animation.BOUNCE 
-      : (isHighDanger ? google.maps.Animation.DROP : undefined);
-    
     return {
       path: google.maps.SymbolPath.CIRCLE,
       fillColor: color,
       fillOpacity: isHighDanger ? 0.9 : 0.7,
       strokeColor: '#FFFFFF',
       strokeWeight: isHighDanger ? 2.5 : 2,
-      scale: scale,
-      zIndex: zIndex,
-      animation: animation
+      scale: isSelected ? 10 : (isHighDanger ? 9 : 8),
+      zIndex: isHighDanger ? 10 : 1,
+      animation: isSelected 
+        ? google.maps.Animation.BOUNCE 
+        : (isHighDanger ? google.maps.Animation.DROP : undefined)
     };
   }, [selectedWarningId]);
 
@@ -211,7 +259,7 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
   }
 
   // Log warnings count for debugging
-  console.log(`Rendering map with ${warnings.length} warnings`);
+  console.log(`Rendering map with ${geocodedWarnings.length} warnings`);
 
   return (
     <div className="relative w-full h-full rounded-lg overflow-hidden">
@@ -228,37 +276,36 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
             onLoad={onLoad}
             onUnmount={onUnmount}
             options={{
-              disableDefaultUI: false, // Enable UI controls
-              zoomControl: true,      // Show zoom controls
+              disableDefaultUI: false,
+              zoomControl: true,
               streetViewControl: false,
               mapTypeControl: false,
               fullscreenControl: false,
               clickableIcons: false,
-              mapTypeId: google.maps.MapTypeId.ROADMAP, // Changed to ROADMAP for clarity
+              mapTypeId: google.maps.MapTypeId.ROADMAP,
               styles: mapStyles,
               gestureHandling: "greedy"
             }}
           >
             {/* Add red circles for shots fired warnings */}
-            {warnings
+            {geocodedWarnings
               .filter(warning => warning.type === 'shots_fired')
               .map(warning => (
-                <Circle
-                  key={`circle-${warning.id}`}
-                  center={{
-                    lat: warning.coordinates.latitude,
-                    lng: warning.coordinates.longitude
-                  }}
-                  options={{
-                    strokeColor: '#FF0000',
-                    strokeOpacity: 0.8,
-                    strokeWeight: 2,
-                    fillColor: '#FF0000',
-                    fillOpacity: 0.2,
-                    radius: 100, // 100 meters radius
-                    zIndex: 1
-                  }}
-                />
+                warning.geocodedPosition && (
+                  <Circle
+                    key={`circle-${warning.id}`}
+                    center={warning.geocodedPosition}
+                    options={{
+                      strokeColor: '#FF0000',
+                      strokeOpacity: 0.8,
+                      strokeWeight: 2,
+                      fillColor: '#FF0000',
+                      fillOpacity: 0.2,
+                      radius: 100,
+                      zIndex: 1
+                    }}
+                  />
+                )
               ))
             }
 
@@ -273,18 +320,17 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
             >
               {(clusterer) => (
                 <>
-                  {warnings.map(warning => (
-                    <Marker
-                      key={warning.id}
-                      position={{
-                        lat: warning.coordinates.latitude,
-                        lng: warning.coordinates.longitude
-                      }}
-                      onClick={() => handleMarkerClick(warning.id)}
-                      icon={getMarkerOptions(warning)}
-                      zIndex={isHighDangerWarning(warning.type) ? 10 : 1}
-                      clusterer={clusterer}
-                    />
+                  {geocodedWarnings.map(warning => (
+                    warning.geocodedPosition && (
+                      <Marker
+                        key={warning.id}
+                        position={warning.geocodedPosition}
+                        onClick={() => handleMarkerClick(warning.id)}
+                        icon={getMarkerOptions(warning)}
+                        zIndex={isHighDangerWarning(warning.type) ? 10 : 1}
+                        clusterer={clusterer}
+                      />
+                    )
                   ))}
                 </>
               )}
@@ -292,18 +338,17 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
 
             {activeMarker && (
               <InfoWindow
-                position={{
-                  lat: warnings.find(w => w.id === activeMarker)?.coordinates.latitude || 0,
-                  lng: warnings.find(w => w.id === activeMarker)?.coordinates.longitude || 0
-                }}
+                position={
+                  geocodedWarnings.find(w => w.id === activeMarker)?.geocodedPosition || defaultCenter
+                }
                 onCloseClick={handleInfoWindowClose}
               >
                 <div className="warning-popup p-1 max-w-[200px]">
                   <h3 className="text-sm font-semibold mb-1">
-                    {warnings.find(w => w.id === activeMarker)?.title}
+                    {geocodedWarnings.find(w => w.id === activeMarker)?.title}
                   </h3>
                   <p className="text-xs text-gray-600">
-                    {warnings.find(w => w.id === activeMarker)?.location}
+                    {geocodedWarnings.find(w => w.id === activeMarker)?.location}
                   </p>
                 </div>
               </InfoWindow>
