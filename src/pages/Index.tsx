@@ -105,6 +105,36 @@ const Index: React.FC = () => {
     });
   };
 
+  // Check if a warning is within the current date range
+  const isWarningInDateRange = (warningId: string, dateRange: DateRange): boolean => {
+    if (!warningId) return false;
+    
+    const warning = warnings.find(w => w.id === warningId);
+    if (!warning) return false;
+    
+    const now = new Date();
+    let cutoffDate: Date;
+    
+    switch (dateRange) {
+      case '7d':
+        cutoffDate = subDays(now, 7);
+        break;
+      case '30d':
+        cutoffDate = subDays(now, 30);
+        break;
+      case '90d':
+        cutoffDate = subMonths(now, 3);
+        break;
+      case '24h':
+      default:
+        cutoffDate = subDays(now, 1);
+        break;
+    }
+    
+    const warningDate = new Date(warning.timestamp);
+    return isAfter(warningDate, cutoffDate);
+  };
+
   // Load warnings data on component mount
   useEffect(() => {
     loadWarnings();
@@ -113,13 +143,20 @@ const Index: React.FC = () => {
   // Apply filters when dependencies change
   useEffect(() => {
     if (warnings.length > 0) {
+      // Check if selected warning is in the new date range
+      if (selectedWarningId && !isWarningInDateRange(selectedWarningId, selectedDateRange)) {
+        // Close popup if warning is not in date range
+        setSelectedWarningId(null);
+        setShowPopup(false);
+      }
+      
       const filtered = applyFilters(warnings, selectedSeverities, selectedDateRange, selectedWarningId);
       setFilteredWarnings(filtered);
       
       // Log for debugging
       console.log(`Filtered to ${filtered.length} warnings from ${warnings.length} total`);
     }
-  }, [warnings, selectedSeverities, selectedDateRange, selectedWarningId]);
+  }, [warnings, selectedSeverities, selectedDateRange]);
 
   // Function to manually refresh the data
   const handleRefresh = async () => {
@@ -187,7 +224,20 @@ const Index: React.FC = () => {
 
   // Handle date range filter change
   const handleDateRangeChange = (range: DateRange) => {
+    // Store the new date range
     setSelectedDateRange(range);
+    
+    // Check if currently selected warning will be in the new date range
+    if (selectedWarningId && !isWarningInDateRange(selectedWarningId, range)) {
+      // If not, close the warning popup
+      setSelectedWarningId(null);
+      setShowPopup(false);
+      
+      toast({
+        title: "Warning hidden",
+        description: "Selected warning is outside the chosen time period",
+      });
+    }
   };
 
   // Close popup
