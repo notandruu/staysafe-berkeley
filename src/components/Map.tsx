@@ -80,6 +80,41 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
       mapRef.current.classList.add('custom-google-map');
     }
   }, []);
+
+  // Handle reset map view when warnings or filters change
+  useEffect(() => {
+    // Only reset view when there are warnings but no selected warning
+    if (map && warnings.length > 0 && !selectedWarningId) {
+      // Get all warning coordinates
+      const bounds = new google.maps.LatLngBounds();
+      
+      // Add each warning location to bounds
+      warnings.forEach(warning => {
+        bounds.extend({
+          lat: warning.coordinates.latitude,
+          lng: warning.coordinates.longitude
+        });
+      });
+      
+      // Pan to fit all warnings
+      if (!bounds.isEmpty()) {
+        map.fitBounds(bounds);
+        
+        // Add some padding
+        const listener = google.maps.event.addListenerOnce(map, 'bounds_changed', () => {
+          map.setZoom(Math.min(15, Math.max(map.getZoom() || 14, 12)));
+        });
+        
+        return () => {
+          google.maps.event.removeListener(listener);
+        };
+      } else {
+        // If somehow bounds are empty, go to default center
+        map.setCenter(defaultCenter);
+        map.setZoom(14);
+      }
+    }
+  }, [map, warnings, selectedWarningId]);
   
   // Handle selected warning with smooth animation
   useEffect(() => {
