@@ -135,6 +135,16 @@ const Index: React.FC = () => {
     return isAfter(warningDate, cutoffDate);
   };
 
+  // Check if a warning's severity is included in the selected severities
+  const isWarningSeveritySelected = (warningId: string, severities: SeverityLevel[]): boolean => {
+    if (!warningId) return false;
+    
+    const warning = warnings.find(w => w.id === warningId);
+    if (!warning) return false;
+    
+    return severities.includes(warning.severity as SeverityLevel);
+  };
+
   // Load warnings data on component mount
   useEffect(() => {
     loadWarnings();
@@ -146,6 +156,13 @@ const Index: React.FC = () => {
       // Check if selected warning is in the new date range
       if (selectedWarningId && !isWarningInDateRange(selectedWarningId, selectedDateRange)) {
         // Close popup if warning is not in date range
+        setSelectedWarningId(null);
+        setShowPopup(false);
+      }
+      
+      // Check if selected warning's severity is still selected
+      if (selectedWarningId && !isWarningSeveritySelected(selectedWarningId, selectedSeverities)) {
+        // Close popup if warning's severity is not selected
         setSelectedWarningId(null);
         setShowPopup(false);
       }
@@ -211,15 +228,26 @@ const Index: React.FC = () => {
     } else {
       // Remove severity from the array
       newSeverities = selectedSeverities.filter(s => s !== severity);
-
-      // If the selected warning is of the severity being filtered out, close the popup
-      if (selectedWarning && selectedWarning.severity === severity) {
-        setShowPopup(false);
-        setSelectedWarningId(null);
-      }
     }
     
+    // Set the new selected severities
     setSelectedSeverities(newSeverities);
+    
+    // Check if currently selected warning's severity is still selected
+    if (selectedWarningId) {
+      const selectedWarning = warnings.find(w => w.id === selectedWarningId);
+      
+      if (selectedWarning && !newSeverities.includes(selectedWarning.severity as SeverityLevel)) {
+        // If not, close the warning popup
+        setSelectedWarningId(null);
+        setShowPopup(false);
+        
+        toast({
+          title: "Warning hidden",
+          description: "Selected warning's severity is no longer in filter",
+        });
+      }
+    }
   };
 
   // Handle date range filter change
