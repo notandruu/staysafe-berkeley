@@ -58,7 +58,7 @@ const Index: React.FC = () => {
   };
 
   // Apply both severity and date range filters
-  const applyFilters = (allWarnings: Warning[], severities: SeverityLevel[], dateRange: DateRange, includeWarningId: string | null = null): Warning[] => {
+  const applyFilters = (allWarnings: Warning[], severities: SeverityLevel[], dateRange: DateRange): Warning[] => {
     // First, filter by date range
     const dateFiltered = filterByDateRange(allWarnings, dateRange);
     
@@ -66,14 +66,6 @@ const Index: React.FC = () => {
     let result = dateFiltered.filter(warning => 
       severities.includes(warning.severity as SeverityLevel)
     );
-    
-    // If there's a selected warning that's not in the filtered results, add it
-    if (includeWarningId) {
-      const selectedWarning = allWarnings.find(w => w.id === includeWarningId);
-      if (selectedWarning && !result.some(w => w.id === includeWarningId)) {
-        result = [...result, selectedWarning];
-      }
-    }
     
     return result;
   };
@@ -158,6 +150,11 @@ const Index: React.FC = () => {
         // Close popup if warning is not in date range
         setSelectedWarningId(null);
         setShowPopup(false);
+        
+        toast({
+          title: "Warning hidden",
+          description: "Selected warning is outside the chosen time period",
+        });
       }
       
       // Check if selected warning's severity is still selected
@@ -165,9 +162,15 @@ const Index: React.FC = () => {
         // Close popup if warning's severity is not selected
         setSelectedWarningId(null);
         setShowPopup(false);
+        
+        toast({
+          title: "Warning hidden",
+          description: "Selected warning's severity is no longer in filter",
+        });
       }
       
-      const filtered = applyFilters(warnings, selectedSeverities, selectedDateRange, selectedWarningId);
+      // Apply filters - but do not include the selected warning if it no longer matches filters
+      const filtered = applyFilters(warnings, selectedSeverities, selectedDateRange);
       setFilteredWarnings(filtered);
       
       // Log for debugging
@@ -184,7 +187,7 @@ const Index: React.FC = () => {
       setWarnings(data);
       
       // Apply filters to the new data
-      const filtered = applyFilters(data, selectedSeverities, selectedDateRange, selectedWarningId);
+      const filtered = applyFilters(data, selectedSeverities, selectedDateRange);
       setFilteredWarnings(filtered);
       
       toast({
@@ -210,9 +213,24 @@ const Index: React.FC = () => {
       setSelectedWarningId(null);
       setShowPopup(false);
     } else {
-      // Otherwise, select the new warning
-      setSelectedWarningId(warningId);
-      setShowPopup(true);
+      // Only select if this warning passes the current filters
+      const warning = warnings.find(w => w.id === warningId);
+      
+      if (warning) {
+        const passesDateFilter = isWarningInDateRange(warningId, selectedDateRange);
+        const passesSeverityFilter = selectedSeverities.includes(warning.severity as SeverityLevel);
+        
+        if (passesDateFilter && passesSeverityFilter) {
+          setSelectedWarningId(warningId);
+          setShowPopup(true);
+        } else {
+          toast({
+            title: "Cannot select warning",
+            description: "This warning is filtered out by your current settings",
+            variant: "destructive",
+          });
+        }
+      }
     }
   };
 
@@ -230,15 +248,12 @@ const Index: React.FC = () => {
       newSeverities = selectedSeverities.filter(s => s !== severity);
     }
     
-    // Set the new selected severities
-    setSelectedSeverities(newSeverities);
-    
-    // Check if currently selected warning's severity is still selected
+    // Check if currently selected warning's severity is still selected before updating state
     if (selectedWarningId) {
       const selectedWarning = warnings.find(w => w.id === selectedWarningId);
       
       if (selectedWarning && !newSeverities.includes(selectedWarning.severity as SeverityLevel)) {
-        // If not, close the warning popup
+        // If not, close the warning popup first
         setSelectedWarningId(null);
         setShowPopup(false);
         
@@ -248,16 +263,16 @@ const Index: React.FC = () => {
         });
       }
     }
+    
+    // Set the new selected severities after handling any selected warnings
+    setSelectedSeverities(newSeverities);
   };
 
   // Handle date range filter change
   const handleDateRangeChange = (range: DateRange) => {
-    // Store the new date range
-    setSelectedDateRange(range);
-    
-    // Check if currently selected warning will be in the new date range
+    // Check if currently selected warning will be in the new date range before updating state
     if (selectedWarningId && !isWarningInDateRange(selectedWarningId, range)) {
-      // If not, close the warning popup
+      // If not, close the warning popup first
       setSelectedWarningId(null);
       setShowPopup(false);
       
@@ -266,6 +281,9 @@ const Index: React.FC = () => {
         description: "Selected warning is outside the chosen time period",
       });
     }
+    
+    // Store the new date range after handling any selected warnings
+    setSelectedDateRange(range);
   };
 
   // Close popup
@@ -390,7 +408,7 @@ const Index: React.FC = () => {
               {/* Warnings Log */}
               <div className="flex-1 border rounded-lg overflow-hidden bg-white">
                 <WarningLog 
-                  warnings={warnings}
+                  warnings={filteredWarnings}
                   selectedWarningId={selectedWarningId}
                   onWarningSelect={handleWarningSelect}
                   dateRange={selectedDateRange}
