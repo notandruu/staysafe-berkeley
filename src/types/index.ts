@@ -6,7 +6,7 @@ export interface Warning {
   title: string;
   description: string;
   location: string;
-  coordinates: {
+  coordinates?: {
     latitude: number;
     longitude: number;
   };
@@ -25,4 +25,3 @@ export type WarningType =
   | 'violent_crime'
   | 'shots_fired'
   | 'robbery';
-
