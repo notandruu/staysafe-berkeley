@@ -1,8 +1,9 @@
-# Welcome to your Lovable project
+
+# StaySafe Berkeley - Campus Safety Alerts
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/2d3b3eee-540b-45c0-af92-188ab44e0d6a
+**URL**: https://staysafeberkeley.org
 
 ## How can I edit this code?
 
@@ -52,18 +53,46 @@ npm run dev
 
 ## What technologies are used for this project?
 
-This project is built with .
+This project is built with:
 
 - Vite
 - TypeScript
 - React
 - shadcn-ui
 - Tailwind CSS
+- Google Maps API
+- UC Berkeley safety data
 
-## How can I deploy this project?
+## How can I deploy this project to staysafeberkeley.org?
 
-Simply open [Lovable](https://lovable.dev/projects/2d3b3eee-540b-45c0-af92-188ab44e0d6a) and click on Share -> Publish.
+### Option 1: Publish via Lovable
 
-## I want to use a custom domain - is that possible?
+1. Open [Lovable](https://lovable.dev/projects/2d3b3eee-540b-45c0-af92-188ab44e0d6a) and click on Share -> Publish.
+2. After deployment, set up your DNS to point to the Lovable deployment.
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+### Option 2: Use Netlify with custom domain
+
+1. Export your repository to GitHub.
+2. Connect Netlify to your GitHub repository.
+3. In Netlify, go to Domain settings and add your custom domain "staysafeberkeley.org".
+4. Follow Netlify's instructions to update your DNS settings:
+   - Add CNAME record pointing to your Netlify site
+   - Or use Netlify DNS for complete management
+5. Wait for DNS propagation (can take up to 48 hours).
+
+### DNS Configuration
+
+When connecting your custom domain to the deployed app, you'll need to set up the following DNS records:
+
+- **A record**: Point the root domain to the IP address provided by your hosting provider.
+- **CNAME record**: Point the "www" subdomain to your deployment URL.
+
+## Domain ownership verification
+
+Some platforms may require you to verify domain ownership by:
+1. Adding a TXT record to your DNS settings
+2. Uploading an HTML file to your domain
+3. Adding a specific meta tag to your site's header
+
+Follow the specific instructions provided by your chosen deployment platform.
+```
