@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow, MarkerClusterer, Circle } from '@react-google-maps/api';
 import { Warning, WarningType } from '@/types';
@@ -103,26 +102,9 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
                 lng: response.results[0].geometry.location.lng()
               }
             });
-          } else {
-            // Fallback to provided coordinates if geocoding fails
-            results.push({
-              ...warning,
-              geocodedPosition: {
-                lat: warning.coordinates.latitude,
-                lng: warning.coordinates.longitude
-              }
-            });
           }
         } catch (error) {
           console.error(`Error geocoding warning ${warning.id}:`, error);
-          // Fallback to provided coordinates
-          results.push({
-            ...warning,
-            geocodedPosition: {
-              lat: warning.coordinates.latitude,
-              lng: warning.coordinates.longitude
-            }
-          });
         }
       }
 
