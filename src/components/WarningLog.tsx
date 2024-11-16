@@ -92,8 +92,8 @@ const WarningLog: React.FC<WarningLogProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="p-4 border-b">
+    <div className="h-full flex flex-col overflow-hidden">
+      <div className="p-4 border-b flex-shrink-0">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <AlertTriangle size={18} className="text-amber-500" />
           <span>{getLogTitle()}</span>
@@ -103,7 +103,7 @@ const WarningLog: React.FC<WarningLogProps> = ({
         </p>
       </div>
       
-      <ScrollArea className="flex-1 h-[calc(100%-4rem)]">
+      <div className="flex-1 overflow-auto">
         <div className="divide-y">
           {sortedWarnings.length > 0 ? (
             sortedWarnings.map(warning => {
@@ -162,7 +162,7 @@ const WarningLog: React.FC<WarningLogProps> = ({
             </div>
           )}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 };
