@@ -2,11 +2,7 @@
 import { Warning, WarningType } from "@/types";
 import { v4 as uuidv4 } from "uuid";
 import { fetchWarningsFromGoogleSheetCSV } from "./googleSheetsService";
-import { addDays, addHours, addMonths, format, subDays, subHours, subMonths } from "date-fns";
-
-// Configuration for the Google Sheet
-const GOOGLE_SHEET_ID = "1AITJJqyHgDZ6xDNkfVoCbOjykv_a7RhlRPqrUGVxTsE"; // Your Google Sheet ID
-const GOOGLE_SHEET_GID = "0"; // Replace with your actual sheet GID if needed
+import { addDays, addHours, format, subDays, subHours, subMonths } from "date-fns";
 
 // Generate a timestamp within a specific time range
 const generateTimestamp = (daysAgo: number, hoursOffset: number = 0): string => {
@@ -16,8 +12,7 @@ const generateTimestamp = (daysAgo: number, hoursOffset: number = 0): string => 
   return addHours(date, hoursOffset).toISOString();
 };
 
-// Sample data as fallback if the Google Sheet fetch fails
-// Distributed across various time periods - 24h, 7d, 30d, 90d
+// Sample data as primary source since Google Sheets integration is disabled
 const SAMPLE_WARNINGS: Warning[] = [
   // Recent warnings (within 24 hours)
   {
@@ -301,12 +296,12 @@ const SAMPLE_WARNINGS: Warning[] = [
   }
 ];
 
-// Cache the warnings to avoid unnecessary API calls
+// Cache the warnings to avoid unnecessary regeneration
 let cachedWarnings: Warning[] | null = null;
 let lastFetchTime: number = 0;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
-// Get warnings from the Google Sheet or use sample data as fallback
+// Get warnings directly from sample data
 export const getWarnings = async (): Promise<Warning[]> => {
   const currentTime = Date.now();
   
@@ -315,29 +310,19 @@ export const getWarnings = async (): Promise<Warning[]> => {
     return cachedWarnings;
   }
   
-  try {
-    // Try to fetch warnings from Google Sheet
-    const warnings = await fetchWarningsFromGoogleSheetCSV(GOOGLE_SHEET_ID, GOOGLE_SHEET_GID);
-    
-    // Update cache
-    cachedWarnings = warnings;
-    lastFetchTime = currentTime;
-    
-    return warnings;
-  } catch (error) {
-    console.error("Error fetching warnings from Google Sheet, using sample data:", error);
-    
-    // Use sample data as fallback
-    return SAMPLE_WARNINGS;
-  }
+  // Always use sample data now that Google Sheets is unlinked
+  cachedWarnings = SAMPLE_WARNINGS;
+  lastFetchTime = currentTime;
+  
+  return SAMPLE_WARNINGS;
 };
 
-// Force a refresh of the warnings data
+// Refresh warnings (now just resets cache and returns sample data)
 export const refreshWarnings = async (): Promise<Warning[]> => {
   // Reset the cache
   cachedWarnings = null;
   
-  // Fetch fresh warnings
+  // Return fresh sample data
   return await getWarnings();
 };
 
@@ -361,7 +346,7 @@ export const getWarningTypeIcon = (type: WarningType): string => {
       return "fist";
     case "shots_fired":
       return "target";
-    case "robbery":
+    case "robbery": 
       return "shopping-bag";
     default:
       return "alert-circle";
