@@ -3,7 +3,7 @@ import React from 'react';
 import { Warning } from '@/types';
 import { formatDistanceToNow, isAfter, subDays, subMonths } from 'date-fns';
 import { getWarningTypeIcon, getWarningTypeColor, getSeverityColor } from '@/services/warningService';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { AlertTriangle, Clock } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
@@ -103,8 +103,8 @@ const WarningLog: React.FC<WarningLogProps> = ({
         </p>
       </div>
       
-      <ScrollArea className="flex-1 w-full">
-        <div className="divide-y pr-4">
+      <ScrollArea className="flex-1 h-[calc(100%-4rem)]">
+        <div className="divide-y">
           {sortedWarnings.length > 0 ? (
             sortedWarnings.map(warning => {
               const isSelected = warning.id === selectedWarningId;
@@ -162,7 +162,6 @@ const WarningLog: React.FC<WarningLogProps> = ({
             </div>
           )}
         </div>
-        <ScrollBar className="bg-gray-100/50" />
       </ScrollArea>
     </div>
   );
