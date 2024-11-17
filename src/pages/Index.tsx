@@ -412,8 +412,8 @@ const Index: React.FC = () => {
                 />
               </div>
               
-              {/* Warnings Log */}
-              <div className="flex-1 border rounded-lg overflow-hidden bg-white">
+              {/* Warnings Log - Key fix: max-h-full to ensure proper height constraints */}
+              <div className="flex-1 border rounded-lg overflow-hidden bg-white h-[400px] md:h-auto">
                 <WarningLog 
                   warnings={filteredWarnings}
                   selectedWarningId={selectedWarningId}

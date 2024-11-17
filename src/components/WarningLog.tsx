@@ -92,7 +92,7 @@ const WarningLog: React.FC<WarningLogProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div className="h-full flex flex-col">
       <div className="p-4 border-b flex-shrink-0">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <AlertTriangle size={18} className="text-amber-500" />
@@ -103,7 +103,8 @@ const WarningLog: React.FC<WarningLogProps> = ({
         </p>
       </div>
       
-      <div className="flex-1 overflow-auto">
+      {/* Direct use of overflow-y-auto for native scrolling - no need for ScrollArea */}
+      <div className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
         <div className="divide-y">
           {sortedWarnings.length > 0 ? (
             sortedWarnings.map(warning => {
