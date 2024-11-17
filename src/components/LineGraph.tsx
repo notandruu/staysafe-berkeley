@@ -88,7 +88,6 @@ const LineGraph: React.FC<LineGraphProps> = ({ warnings, days = 7 }) => {
   // Get title based on number of days
   const getTitle = () => {
     if (days === 1) return '24-Hour Warning Trend';
-    if (days >= 90) return '3-Month Warning Trend';
     if (days >= 30) return '30-Day Warning Trend';
     return '7-Day Warning Trend';
   };
@@ -105,7 +104,7 @@ const LineGraph: React.FC<LineGraphProps> = ({ warnings, days = 7 }) => {
           <XAxis 
             dataKey="formattedDate" 
             tick={{ fontSize: 12 }}
-            interval={days > 30 ? "preserveStartEnd" : (days === 1 ? 3 : 0)}
+            interval={days === 1 ? 3 : 0}
           />
           <YAxis 
             allowDecimals={false} 

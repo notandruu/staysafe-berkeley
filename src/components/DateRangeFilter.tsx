@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { CalendarDays } from 'lucide-react';
 
-export type DateRange = '24h' | '7d' | '30d' | '90d';
+export type DateRange = '24h' | '7d' | '30d';
 
 interface DateRangeFilterProps {
   selectedRange: DateRange;
@@ -44,14 +44,6 @@ const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
           className="flex-1"
         >
           30 Days
-        </Button>
-        <Button
-          size="sm"
-          variant={selectedRange === '90d' ? 'default' : 'outline'}
-          onClick={() => onRangeChange('90d')}
-          className="flex-1"
-        >
-          3 Months
         </Button>
       </div>
     </div>

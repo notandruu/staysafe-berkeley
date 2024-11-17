@@ -34,9 +34,6 @@ const WarningLog: React.FC<WarningLogProps> = ({
       case '30d':
         cutoffDate = subDays(now, 30);
         break;
-      case '90d':
-        cutoffDate = subMonths(now, 3);
-        break;
       case '24h':
       default:
         cutoffDate = subDays(now, 1);
@@ -74,7 +71,6 @@ const WarningLog: React.FC<WarningLogProps> = ({
     switch (dateRange) {
       case '7d': return 'Last 7 Days Warnings';
       case '30d': return 'Last 30 Days Warnings';
-      case '90d': return 'Last 3 Months Warnings';
       case '24h':
       default: return 'Recent Warnings';
     }
@@ -85,7 +81,6 @@ const WarningLog: React.FC<WarningLogProps> = ({
     switch (dateRange) {
       case '7d': return 'Last 7 days - Click to view details';
       case '30d': return 'Last 30 days - Click to view details';
-      case '90d': return 'Last 3 months - Click to view details';
       case '24h':
       default: return 'Last 24 hours - Click to view details';
     }

@@ -82,9 +82,6 @@ const Index: React.FC = () => {
       case '30d':
         cutoffDate = subDays(now, 30);
         break;
-      case '90d':
-        cutoffDate = subMonths(now, 3);
-        break;
       case '24h':
       default:
         cutoffDate = subDays(now, 1);
@@ -113,9 +110,6 @@ const Index: React.FC = () => {
         break;
       case '30d':
         cutoffDate = subDays(now, 30);
-        break;
-      case '90d':
-        cutoffDate = subMonths(now, 3);
         break;
       case '24h':
       default:
@@ -307,7 +301,6 @@ const Index: React.FC = () => {
   // Convert date range to days for LineGraph
   const getDateRangeInDays = (): number => {
     switch (selectedDateRange) {
-      case '90d': return 90;
       case '30d': return 30;
       case '7d': return 7;
       case '24h': return 1; // 1 day (24 hours)
