@@ -27,3 +27,34 @@ export interface MarkerOptions {
   zIndex: number;
   animation?: google.maps.Animation;
 }
+
+// Extended Google Maps libraries to include visualization for heatmap
+declare global {
+  namespace google.maps {
+    namespace visualization {
+      class HeatmapLayer {
+        constructor(opts?: HeatmapLayerOptions);
+        setData(data: any[] | MVCArray<any>): void;
+        setMap(map: Map | null): void;
+        setOptions(options: HeatmapLayerOptions): void;
+        getData(): MVCArray<any>;
+        getMap(): Map | null;
+      }
+
+      interface HeatmapLayerOptions {
+        data?: any[] | MVCArray<any>;
+        map?: Map;
+        dissipating?: boolean;
+        gradient?: string[];
+        maxIntensity?: number;
+        opacity?: number;
+        radius?: number;
+      }
+
+      interface WeightedLocation {
+        location: LatLng;
+        weight?: number;
+      }
+    }
+  }
+}

@@ -6,15 +6,23 @@ import { MapProps } from '@/types/mapTypes';
 import { 
   containerStyle, 
   defaultCenter, 
-  getMapOptions 
+  getMapOptions,
+  getDarkModeMapOptions,
+  getHeatmapMapOptions
 } from '@/utils/mapUtils';
 import { useGeocoding } from '@/hooks/useGeocoding';
 import WarningMarkers from './map/WarningMarkers';
 import WarningInfoWindow from './map/WarningInfoWindow';
+import { Button } from '@/components/ui/button';
+import { Moon, Sun } from 'lucide-react';
+
+// Define map style type
+export type MapStyle = 'standard' | 'dark' | 'heatmap';
 
 const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect }) => {
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [activeMarker, setActiveMarker] = useState<string | null>(null);
+  const [mapStyle, setMapStyle] = useState<MapStyle>('standard');
   const mapRef = useRef<HTMLDivElement>(null);
   
   // Use our custom hook for geocoding
@@ -35,6 +43,18 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
       mapRef.current.classList.add('custom-google-map');
     }
   }, []);
+
+  // Get appropriate map options based on selected style
+  const getStyleOptions = useCallback(() => {
+    switch (mapStyle) {
+      case 'dark':
+        return getDarkModeMapOptions();
+      case 'heatmap':
+        return getHeatmapMapOptions();
+      default:
+        return getMapOptions();
+    }
+  }, [mapStyle]);
 
   // Handle reset map view when warnings or filters change
   useEffect(() => {
@@ -99,6 +119,13 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
     }
   }, [selectedWarningId, geocodedWarnings, map]);
 
+  // Apply map style changes when style changes
+  useEffect(() => {
+    if (map) {
+      map.setOptions(getStyleOptions());
+    }
+  }, [map, mapStyle, getStyleOptions]);
+
   const handleMarkerClick = (warningId: string) => {
     onWarningSelect(warningId);
     setActiveMarker(warningId);
@@ -106,6 +133,33 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
 
   const handleInfoWindowClose = () => {
     setActiveMarker(null);
+  };
+
+  // Toggle between map styles
+  const toggleMapStyle = () => {
+    setMapStyle(current => {
+      if (current === 'standard') return 'dark';
+      if (current === 'dark') return 'heatmap';
+      return 'standard';
+    });
+  };
+
+  // Get button text based on current style
+  const getStyleButtonText = () => {
+    switch (mapStyle) {
+      case 'standard': return 'Standard';
+      case 'dark': return 'Dark Mode';
+      case 'heatmap': return 'Heatmap';
+    }
+  };
+
+  // Get button icon based on current style
+  const getStyleButtonIcon = () => {
+    switch (mapStyle) {
+      case 'standard': return <Sun size={14} />;
+      case 'dark': return <Moon size={14} />;
+      case 'heatmap': return <span className="w-3.5 h-3.5 bg-gradient-to-r from-green-300 to-red-500 rounded-sm" />;
+    }
   };
 
   if (loadError) {
@@ -122,7 +176,7 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
   }
 
   // Log warnings count for debugging
-  console.log(`Rendering map with ${geocodedWarnings.length} warnings`);
+  console.log(`Rendering map with ${geocodedWarnings.length} warnings, style: ${mapStyle}`);
 
   return (
     <div className="relative w-full h-full rounded-lg overflow-hidden">
@@ -138,12 +192,13 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
             zoom={14}
             onLoad={onLoad}
             onUnmount={onUnmount}
-            options={getMapOptions()}
+            options={getStyleOptions()}
           >
             <WarningMarkers 
               geocodedWarnings={geocodedWarnings}
               selectedWarningId={selectedWarningId}
               onMarkerClick={handleMarkerClick}
+              mapStyle={mapStyle}
             />
             
             <WarningInfoWindow 
@@ -153,6 +208,19 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
             />
           </GoogleMap>
         )}
+      </div>
+
+      {/* Map Style Toggle Button */}
+      <div className="absolute top-2 left-2 z-10">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="bg-white/80 hover:bg-white shadow-md text-xs"
+          onClick={toggleMapStyle}
+        >
+          <span className="mr-1.5">{getStyleButtonIcon()}</span>
+          {getStyleButtonText()}
+        </Button>
       </div>
 
       {/* Custom attribution (replacing Google's) */}
