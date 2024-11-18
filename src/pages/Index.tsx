@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Map from '@/components/Map';
 import WarningLog from '@/components/WarningLog';
@@ -25,19 +24,15 @@ const Index: React.FC = () => {
   const [selectedDateRange, setSelectedDateRange] = useState<DateRange>('24h');
   const isMobile = useIsMobile();
 
-  // Function to load warnings data
   const loadWarnings = async () => {
     setIsLoading(true);
     try {
-      // Fetch warnings from Google Sheets
       const data = await getWarnings();
       setWarnings(data);
       
-      // Apply filters
       const filtered = applyFilters(data, selectedSeverities, selectedDateRange);
       setFilteredWarnings(filtered);
 
-      // If we were refreshing, show a success toast
       if (isRefreshing) {
         toast({
           title: "Data refreshed",
@@ -57,12 +52,9 @@ const Index: React.FC = () => {
     }
   };
 
-  // Apply both severity and date range filters
   const applyFilters = (allWarnings: Warning[], severities: SeverityLevel[], dateRange: DateRange): Warning[] => {
-    // First, filter by date range
     const dateFiltered = filterByDateRange(allWarnings, dateRange);
     
-    // Then apply severity filter
     let result = dateFiltered.filter(warning => 
       severities.includes(warning.severity as SeverityLevel)
     );
@@ -70,7 +62,6 @@ const Index: React.FC = () => {
     return result;
   };
 
-  // Filter warnings by date range
   const filterByDateRange = (allWarnings: Warning[], range: DateRange): Warning[] => {
     const now = new Date();
     let cutoffDate: Date;
@@ -94,7 +85,6 @@ const Index: React.FC = () => {
     });
   };
 
-  // Check if a warning is within the current date range
   const isWarningInDateRange = (warningId: string, dateRange: DateRange): boolean => {
     if (!warningId) return false;
     
@@ -121,7 +111,6 @@ const Index: React.FC = () => {
     return isAfter(warningDate, cutoffDate);
   };
 
-  // Check if a warning's severity is included in the selected severities
   const isWarningSeveritySelected = (warningId: string, severities: SeverityLevel[]): boolean => {
     if (!warningId) return false;
     
@@ -131,29 +120,22 @@ const Index: React.FC = () => {
     return severities.includes(warning.severity as SeverityLevel);
   };
 
-  // Load warnings data on component mount
   useEffect(() => {
     loadWarnings();
   }, []);
 
-  // Apply filters when dependencies change
   useEffect(() => {
     if (warnings.length > 0) {
-      // Apply filters to get new filtered warnings
       const filtered = applyFilters(warnings, selectedSeverities, selectedDateRange);
       setFilteredWarnings(filtered);
       
-      // Check if selected warning is in the filtered results
       const isSelectedWarningInFiltered = selectedWarningId && 
         filtered.some(w => w.id === selectedWarningId);
       
-      // If the selected warning is not in filtered results, close the popup
       if (selectedWarningId && !isSelectedWarningInFiltered) {
-        // Close popup if warning doesn't match current filters
         setSelectedWarningId(null);
         setShowPopup(false);
         
-        // Determine the reason for hiding
         const warning = warnings.find(w => w.id === selectedWarningId);
         if (warning) {
           const isInDateRange = isWarningInDateRange(selectedWarningId, selectedDateRange);
@@ -173,20 +155,16 @@ const Index: React.FC = () => {
         }
       }
       
-      // Log for debugging
       console.log(`Filtered to ${filtered.length} warnings from ${warnings.length} total`);
     }
   }, [warnings, selectedSeverities, selectedDateRange]);
 
-  // Function to manually refresh the data
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      // Force a refresh of the data
       const data = await refreshWarnings();
       setWarnings(data);
       
-      // Apply filters to the new data
       const filtered = applyFilters(data, selectedSeverities, selectedDateRange);
       setFilteredWarnings(filtered);
       
@@ -206,14 +184,11 @@ const Index: React.FC = () => {
     }
   };
 
-  // Handle warning selection or deselection
   const handleWarningSelect = (warningId: string) => {
-    // If the warning is already selected, unselect it
     if (selectedWarningId === warningId) {
       setSelectedWarningId(null);
       setShowPopup(false);
     } else {
-      // Only select if this warning passes the current filters
       const warning = warnings.find(w => w.id === warningId);
       
       if (warning) {
@@ -234,30 +209,23 @@ const Index: React.FC = () => {
     }
   };
 
-  // Handle severity filter change
   const handleSeverityChange = (severity: SeverityLevel, isChecked: boolean) => {
-    // Calculate new severities first
     let newSeverities: SeverityLevel[];
     
     if (isChecked) {
-      // Add severity if it's not already in the array
       newSeverities = selectedSeverities.includes(severity) 
         ? selectedSeverities 
         : [...selectedSeverities, severity];
     } else {
-      // Remove severity from the array
       newSeverities = selectedSeverities.filter(s => s !== severity);
     }
     
-    // Update state with new severities
     setSelectedSeverities(newSeverities);
     
-    // Check if selected warning will still be visible with new severities
     if (selectedWarningId) {
       const selectedWarning = warnings.find(w => w.id === selectedWarningId);
       
       if (selectedWarning && !newSeverities.includes(selectedWarning.severity as SeverityLevel)) {
-        // If warning won't be visible with new filters, close it
         setSelectedWarningId(null);
         setShowPopup(false);
         
@@ -269,14 +237,10 @@ const Index: React.FC = () => {
     }
   };
 
-  // Handle date range filter change
   const handleDateRangeChange = (range: DateRange) => {
-    // Update state with new date range
     setSelectedDateRange(range);
     
-    // Check if selected warning will still be visible with new date range
     if (selectedWarningId && !isWarningInDateRange(selectedWarningId, range)) {
-      // If warning won't be visible with new date range, close it
       setSelectedWarningId(null);
       setShowPopup(false);
       
@@ -287,50 +251,38 @@ const Index: React.FC = () => {
     }
   };
 
-  // Close popup
   const handleClosePopup = () => {
     setShowPopup(false);
     setSelectedWarningId(null);
   };
 
-  // Get the selected warning
   const selectedWarning = selectedWarningId 
     ? warnings.find(w => w.id === selectedWarningId) || null 
     : null;
 
-  // Convert date range to days for LineGraph
   const getDateRangeInDays = (): number => {
     switch (selectedDateRange) {
       case '30d': return 30;
       case '7d': return 7;
-      case '24h': return 1; // 1 day (24 hours)
+      case '24h': return 1;
       default: return 7;
     }
   };
 
   return (
     <div className="h-screen flex flex-col bg-background">
-      {/* Header with UC Berkeley Branding */}
       <header className="bg-[#003262] text-white border-b border-[#FDB515] shadow-md">
         <div className="container mx-auto py-3 px-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <img 
-                src="/lovable-uploads/dd661f0b-163d-4e06-a843-fdf50cbeab8b.png" 
-                alt="UC Berkeley Logo" 
-                className="cal-logo h-10 md:h-12 mr-3" 
-              />
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-                  StaySafe Berkeley
-                </h1>
-                <p className="hidden md:block text-base text-[#FDB515] font-medium mt-1">
-                  Interactive map of campus safety alerts and warnings
-                </p>
-              </div>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+                StaySafe Berkeley
+              </h1>
+              <p className="hidden md:block text-base text-[#FDB515] font-medium mt-1">
+                Interactive map of campus safety alerts and warnings
+              </p>
             </div>
             
-            {/* Shield Logo - Positioned top right on mobile */}
             <div className="flex items-center space-x-2">
               <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-[#FDB515] flex items-center justify-center">
                 <svg 
@@ -353,7 +305,6 @@ const Index: React.FC = () => {
         </div>
       </header>
 
-      {/* Main content */}
       <main className="flex-1 overflow-hidden container mx-auto p-4">
         {isLoading ? (
           <div className="h-full flex items-center justify-center">
@@ -364,9 +315,7 @@ const Index: React.FC = () => {
           </div>
         ) : (
           <div className="h-full grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Left column - Map Container and Filters */}
             <div className="md:col-span-2 flex flex-col h-full">
-              {/* Map container with fixed height on desktop */}
               <div className="relative h-[40vh] md:h-[60vh] bg-gray-100 rounded-lg border overflow-hidden">
                 <Map 
                   warnings={filteredWarnings}
@@ -374,7 +323,6 @@ const Index: React.FC = () => {
                   onWarningSelect={handleWarningSelect}
                 />
                 
-                {/* Refresh Button */}
                 <div className="absolute top-2 right-2 z-10">
                   <Button 
                     variant="outline" 
@@ -389,7 +337,6 @@ const Index: React.FC = () => {
                 </div>
               </div>
               
-              {/* Filters - Side by side on desktop, stacked on mobile */}
               <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
                 <SeverityFilter 
                   selectedSeverities={selectedSeverities}
@@ -402,9 +349,7 @@ const Index: React.FC = () => {
               </div>
             </div>
 
-            {/* Right Side - Line Graph and Warnings Log */}
             <div className="flex flex-col h-[calc(60vh-8rem)] md:h-full gap-4">
-              {/* Line Graph */}
               <div className="flex-none">
                 <LineGraph 
                   warnings={warnings} 
@@ -412,7 +357,6 @@ const Index: React.FC = () => {
                 />
               </div>
               
-              {/* Warnings Log - Key fix: max-h-full to ensure proper height constraints */}
               <div className="flex-1 border rounded-lg overflow-hidden bg-white h-[400px] md:h-auto">
                 <WarningLog 
                   warnings={filteredWarnings}
@@ -426,7 +370,6 @@ const Index: React.FC = () => {
         )}
       </main>
 
-      {/* Warning Popup - On mobile shows at bottom, on desktop shows over map */}
       {showPopup && selectedWarning && (
         <div 
           className={`
