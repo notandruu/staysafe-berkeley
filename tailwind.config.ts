@@ -34,6 +34,8 @@ export default {
 					secondary: '#C4820E', // Secondary Gold
 					gray: '#8E9196', // Gray
 					dark: '#1A1F2C', // Dark Blue (almost black)
+					light: '#F2F2F2', // Light Gray
+					accent: '#3B7EA1', // Berkeley Accent Blue
 				},
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
@@ -100,6 +102,14 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out'
+			},
+			boxShadow: {
+				'berkeley': '0 4px 14px 0 rgba(0, 50, 98, 0.2)',
+				'berkeley-hover': '0 6px 20px 0 rgba(0, 50, 98, 0.3)',
+			},
+			backgroundImage: {
+				'berkeley-gradient': 'linear-gradient(to right, #003262, #3B7EA1)',
+				'berkeley-gold-gradient': 'linear-gradient(to right, #FDB515, #C4820E)',
 			}
 		}
 	},

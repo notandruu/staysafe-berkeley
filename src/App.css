@@ -1,3 +1,4 @@
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -12,10 +13,10 @@
   transition: filter 300ms;
 }
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+  filter: drop-shadow(0 0 2em #FDB515aa);
 }
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  filter: drop-shadow(0 0 2em #003262aa);
 }
 
 @keyframes logo-spin {
@@ -39,4 +40,53 @@
 
 .read-the-docs {
   color: #888;
+}
+
+/* Berkeley-specific colors */
+.berkeley-blue {
+  color: #003262;
+}
+
+.berkeley-gold {
+  color: #FDB515;
+}
+
+.berkeley-bg-blue {
+  background-color: #003262;
+}
+
+.berkeley-bg-gold {
+  background-color: #FDB515;
+}
+
+.berkeley-border-blue {
+  border-color: #003262;
+}
+
+.berkeley-border-gold {
+  border-color: #FDB515;
+}
+
+/* Cal logo animation */
+.cal-logo {
+  height: 2.5em;
+  margin-right: 0.75rem;
+}
+
+/* Berkeley-themed scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #003262;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #C4820E;
 }
