@@ -7,8 +7,7 @@ import {
   containerStyle, 
   defaultCenter, 
   getMapOptions,
-  getDarkModeMapOptions,
-  getHeatmapMapOptions
+  getDarkModeMapOptions
 } from '@/utils/mapUtils';
 import { useGeocoding } from '@/hooks/useGeocoding';
 import WarningMarkers from './map/WarningMarkers';
@@ -17,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Moon, Sun } from 'lucide-react';
 
 // Define map style type
-export type MapStyle = 'standard' | 'dark' | 'heatmap';
+export type MapStyle = 'standard' | 'dark';
 
 const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect }) => {
   const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -49,8 +48,6 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
     switch (mapStyle) {
       case 'dark':
         return getDarkModeMapOptions();
-      case 'heatmap':
-        return getHeatmapMapOptions();
       default:
         return getMapOptions();
     }
@@ -137,29 +134,17 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
 
   // Toggle between map styles
   const toggleMapStyle = () => {
-    setMapStyle(current => {
-      if (current === 'standard') return 'dark';
-      if (current === 'dark') return 'heatmap';
-      return 'standard';
-    });
+    setMapStyle(current => current === 'standard' ? 'dark' : 'standard');
   };
 
   // Get button text based on current style
   const getStyleButtonText = () => {
-    switch (mapStyle) {
-      case 'standard': return 'Standard';
-      case 'dark': return 'Dark Mode';
-      case 'heatmap': return 'Heatmap';
-    }
+    return mapStyle === 'standard' ? 'Satellite' : 'Dark Mode';
   };
 
   // Get button icon based on current style
   const getStyleButtonIcon = () => {
-    switch (mapStyle) {
-      case 'standard': return <Sun size={14} />;
-      case 'dark': return <Moon size={14} />;
-      case 'heatmap': return <span className="w-3.5 h-3.5 bg-gradient-to-r from-green-300 to-red-500 rounded-sm" />;
-    }
+    return mapStyle === 'standard' ? <Sun size={14} /> : <Moon size={14} />;
   };
 
   if (loadError) {

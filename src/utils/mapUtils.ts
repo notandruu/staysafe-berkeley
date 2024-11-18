@@ -133,92 +133,13 @@ export const darkMapStyles = [
   },
 ];
 
-// Heatmap style map (lighter base for better heatmap visibility)
-export const heatmapMapStyles = [
-  {
-    featureType: "all",
-    elementType: "geometry.fill",
-    stylers: [{ weight: "2.00" }],
-  },
-  {
-    featureType: "all",
-    elementType: "geometry.stroke",
-    stylers: [{ color: "#9c9c9c" }],
-  },
-  {
-    featureType: "all",
-    elementType: "labels.text",
-    stylers: [{ visibility: "on" }],
-  },
-  {
-    featureType: "landscape",
-    elementType: "all",
-    stylers: [{ color: "#f2f2f2" }],
-  },
-  {
-    featureType: "landscape",
-    elementType: "geometry.fill",
-    stylers: [{ color: "#f9f9f9" }],
-  },
-  {
-    featureType: "landscape.man_made",
-    elementType: "geometry.fill",
-    stylers: [{ color: "#eeeeee" }],
-  },
-  {
-    featureType: "poi",
-    elementType: "all",
-    stylers: [{ visibility: "off" }],
-  },
-  {
-    featureType: "road",
-    elementType: "all",
-    stylers: [{ saturation: -100 }, { lightness: 45 }],
-  },
-  {
-    featureType: "road",
-    elementType: "geometry.fill",
-    stylers: [{ color: "#dadada" }],
-  },
-  {
-    featureType: "road",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#5b5b5b" }],
-  },
-  {
-    featureType: "road",
-    elementType: "labels.icon",
-    stylers: [{ visibility: "off" }],
-  },
-  {
-    featureType: "transit",
-    elementType: "all",
-    stylers: [{ visibility: "off" }],
-  },
-  {
-    featureType: "water",
-    elementType: "all",
-    stylers: [{ color: "#46bcec" }, { visibility: "on" }],
-  },
-  {
-    featureType: "water",
-    elementType: "geometry.fill",
-    stylers: [{ color: "#d8e7f7" }],
-  },
-  {
-    featureType: "water",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#4f90d5" }],
-  },
-];
-
 // Container style for the map
 export const containerStyle = {
   width: '100%',
   height: '100%'
 };
 
-// Default map options
+// Default map options (satellite)
 export const getMapOptions = () => ({
   disableDefaultUI: false,
   zoomControl: true,
@@ -226,7 +147,7 @@ export const getMapOptions = () => ({
   mapTypeControl: false,
   fullscreenControl: false,
   clickableIcons: false,
-  mapTypeId: "roadmap",
+  mapTypeId: "satellite", // Change to satellite
   styles: mapStyles,
   gestureHandling: "greedy"
 });
@@ -241,18 +162,5 @@ export const getDarkModeMapOptions = () => ({
   clickableIcons: false,
   mapTypeId: "roadmap",
   styles: darkMapStyles,
-  gestureHandling: "greedy"
-});
-
-// Heatmap map options
-export const getHeatmapMapOptions = () => ({
-  disableDefaultUI: false,
-  zoomControl: true,
-  streetViewControl: false,
-  mapTypeControl: false,
-  fullscreenControl: false,
-  clickableIcons: false,
-  mapTypeId: "roadmap",
-  styles: heatmapMapStyles,
   gestureHandling: "greedy"
 });

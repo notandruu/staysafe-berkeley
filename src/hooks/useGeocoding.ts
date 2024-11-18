@@ -12,7 +12,7 @@ export const useGeocoding = (warnings: Warning[]) => {
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
-    libraries: ['places', 'visualization']
+    libraries: ['places']
   });
 
   // Initialize geocoder when maps API is loaded
