@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import Map from '@/components/Map';
 import WarningLog from '@/components/WarningLog';
 import WarningPopup from '@/components/WarningPopup';
+import CameraFeeds from '@/components/CameraFeeds';
 import { Warning } from '@/types';
 import { getWarnings, refreshWarnings } from '@/services/warningService';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -305,7 +307,7 @@ const Index: React.FC = () => {
         </div>
       </header>
 
-      <main className="flex-1 overflow-hidden container mx-auto p-4">
+      <main className="flex-1 overflow-y-auto container mx-auto p-4 pb-8">
         {isLoading ? (
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
@@ -314,57 +316,65 @@ const Index: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="h-full grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:col-span-2 flex flex-col h-full">
-              <div className="relative h-[40vh] md:h-[60vh] bg-gray-100 rounded-lg border overflow-hidden">
-                <Map 
-                  warnings={filteredWarnings}
-                  selectedWarningId={selectedWarningId}
-                  onWarningSelect={handleWarningSelect}
-                />
+          <div className="flex flex-col space-y-6">
+            {/* Map and Warnings Section */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="md:col-span-2 flex flex-col h-full">
+                <div className="relative h-[40vh] md:h-[60vh] bg-gray-100 rounded-lg border overflow-hidden">
+                  <Map 
+                    warnings={filteredWarnings}
+                    selectedWarningId={selectedWarningId}
+                    onWarningSelect={handleWarningSelect}
+                  />
+                  
+                  <div className="absolute top-2 right-2 z-10">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="bg-white shadow-md hover:bg-gray-100"
+                      onClick={handleRefresh}
+                      disabled={isRefreshing}
+                    >
+                      <RefreshCw size={16} className={`mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+                      {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+                    </Button>
+                  </div>
+                </div>
                 
-                <div className="absolute top-2 right-2 z-10">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="bg-white shadow-md hover:bg-gray-100"
-                    onClick={handleRefresh}
-                    disabled={isRefreshing}
-                  >
-                    <RefreshCw size={16} className={`mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
-                    {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
-                  </Button>
+                <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <SeverityFilter 
+                    selectedSeverities={selectedSeverities}
+                    onSeverityChange={handleSeverityChange}
+                  />
+                  <DateRangeFilter
+                    selectedRange={selectedDateRange}
+                    onRangeChange={handleDateRangeChange}
+                  />
                 </div>
               </div>
-              
-              <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-                <SeverityFilter 
-                  selectedSeverities={selectedSeverities}
-                  onSeverityChange={handleSeverityChange}
-                />
-                <DateRangeFilter
-                  selectedRange={selectedDateRange}
-                  onRangeChange={handleDateRangeChange}
-                />
+
+              <div className="flex flex-col h-[calc(60vh-8rem)] md:h-full gap-4">
+                <div className="flex-none">
+                  <LineGraph 
+                    warnings={warnings} 
+                    days={getDateRangeInDays()}
+                  />
+                </div>
+                
+                <div className="flex-1 border rounded-lg overflow-hidden bg-white h-[400px] md:h-auto">
+                  <WarningLog 
+                    warnings={filteredWarnings}
+                    selectedWarningId={selectedWarningId}
+                    onWarningSelect={handleWarningSelect}
+                    dateRange={selectedDateRange}
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="flex flex-col h-[calc(60vh-8rem)] md:h-full gap-4">
-              <div className="flex-none">
-                <LineGraph 
-                  warnings={warnings} 
-                  days={getDateRangeInDays()}
-                />
-              </div>
-              
-              <div className="flex-1 border rounded-lg overflow-hidden bg-white h-[400px] md:h-auto">
-                <WarningLog 
-                  warnings={filteredWarnings}
-                  selectedWarningId={selectedWarningId}
-                  onWarningSelect={handleWarningSelect}
-                  dateRange={selectedDateRange}
-                />
-              </div>
+            {/* Live Camera Feeds Section */}
+            <div className="mt-6">
+              <CameraFeeds />
             </div>
           </div>
         )}
