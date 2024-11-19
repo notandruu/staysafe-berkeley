@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { AlertTriangle, Clock } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { DateRange } from '@/components/DateRangeFilter';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface WarningLogProps {
   warnings: Warning[];
@@ -22,6 +23,8 @@ const WarningLog: React.FC<WarningLogProps> = ({
   onWarningSelect,
   dateRange = '24h'
 }) => {
+  const isMobile = useIsMobile();
+
   // Filter warnings based on date range
   const getFilteredWarnings = () => {
     const now = new Date();
@@ -86,6 +89,14 @@ const WarningLog: React.FC<WarningLogProps> = ({
     }
   };
 
+  // Calculate the height based on mobile or desktop
+  // Each warning card is approximately 96px in height
+  const getScrollAreaHeight = () => {
+    const warningHeight = 96;
+    const displayCount = isMobile ? 2 : 4;
+    return `${warningHeight * displayCount}px`;
+  };
+
   return (
     <div className="h-full flex flex-col">
       <div className="p-4 border-b flex-shrink-0">
@@ -99,7 +110,7 @@ const WarningLog: React.FC<WarningLogProps> = ({
       </div>
       
       {/* Using ScrollArea component for controlled scrolling with fixed height */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1" style={{ height: getScrollAreaHeight() }}>
         <div className="divide-y">
           {sortedWarnings.length > 0 ? (
             sortedWarnings.map(warning => {
