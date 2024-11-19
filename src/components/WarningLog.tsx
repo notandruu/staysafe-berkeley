@@ -98,8 +98,8 @@ const WarningLog: React.FC<WarningLogProps> = ({
         </p>
       </div>
       
-      {/* Direct use of overflow-y-auto for native scrolling - no need for ScrollArea */}
-      <div className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+      {/* Using ScrollArea component for controlled scrolling with fixed height */}
+      <ScrollArea className="flex-1">
         <div className="divide-y">
           {sortedWarnings.length > 0 ? (
             sortedWarnings.map(warning => {
@@ -158,7 +158,7 @@ const WarningLog: React.FC<WarningLogProps> = ({
             </div>
           )}
         </div>
-      </div>
+      </ScrollArea>
     </div>
   );
 };
