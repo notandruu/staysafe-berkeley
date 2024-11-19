@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Eye, RefreshCcw } from 'lucide-react';
+import { Eye } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Camera {
   id: string;
@@ -55,15 +56,7 @@ const sampleCameras: Camera[] = [
 const CameraFeeds: React.FC = () => {
   const [cameras] = useState<Camera[]>(sampleCameras);
   const [selectedCamera, setSelectedCamera] = useState<Camera | null>(cameras[0]);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    // Simulate refresh by waiting 1.5 seconds
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 1500);
-  };
+  const isMobile = useIsMobile();
 
   const handleViewLive = (url: string) => {
     window.open(url, '_blank', 'noopener,noreferrer');
@@ -71,53 +64,65 @@ const CameraFeeds: React.FC = () => {
 
   return (
     <Card className="border-berkeley-blue shadow-berkeley">
-      <CardHeader className="bg-berkeley-blue text-white border-b border-berkeley-gold">
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle className="text-xl">Live Camera Feeds</CardTitle>
-            <CardDescription className="text-berkeley-gold">
-              Sourced from AlertCalifornia Wildfire Detection Network
-            </CardDescription>
-          </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="bg-berkeley-gold/20 text-white border-berkeley-gold hover:bg-berkeley-gold/40"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-          >
-            <RefreshCcw size={14} className={`mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
+      <CardHeader className="bg-berkeley-blue text-white border-b border-berkeley-gold py-3">
+        <div>
+          <CardTitle className="text-xl">Live Camera Feeds</CardTitle>
+          <CardDescription className="text-berkeley-gold">
+            Sourced from AlertCalifornia Wildfire Detection Network
+          </CardDescription>
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
-          {/* Camera list */}
-          <div className="border-r border-gray-200">
-            <div className="py-2 px-3 bg-gray-50 border-b border-gray-200 font-semibold text-sm text-gray-700">
-              Available Cameras
-            </div>
-            <ScrollArea className="h-[250px] md:h-[400px]">
-              <div className="divide-y">
-                {cameras.map(camera => (
-                  <div 
-                    key={camera.id}
-                    className={`p-3 cursor-pointer hover:bg-gray-50 transition-colors
-                      ${selectedCamera?.id === camera.id ? 'bg-berkeley-blue/10 border-l-4 border-berkeley-blue' : ''}
-                    `}
-                    onClick={() => setSelectedCamera(camera)}
-                  >
-                    <h3 className="font-medium text-berkeley-blue">{camera.name}</h3>
-                    <p className="text-xs text-gray-600">{camera.location}</p>
-                  </div>
-                ))}
+        <div className={`grid grid-cols-1 ${isMobile ? '' : 'md:grid-cols-3'} gap-0`}>
+          {/* Camera list - hidden on mobile */}
+          {!isMobile && (
+            <div className="border-r border-gray-200">
+              <div className="py-2 px-3 bg-gray-50 border-b border-gray-200 font-semibold text-sm text-gray-700">
+                Available Cameras
               </div>
-            </ScrollArea>
-          </div>
+              <ScrollArea className="h-[400px]">
+                <div className="divide-y">
+                  {cameras.map(camera => (
+                    <div 
+                      key={camera.id}
+                      className={`p-3 cursor-pointer hover:bg-gray-50 transition-colors
+                        ${selectedCamera?.id === camera.id ? 'bg-berkeley-blue/10 border-l-4 border-berkeley-blue' : ''}
+                      `}
+                      onClick={() => setSelectedCamera(camera)}
+                    >
+                      <h3 className="font-medium text-berkeley-blue">{camera.name}</h3>
+                      <p className="text-xs text-gray-600">{camera.location}</p>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
 
           {/* Selected camera preview */}
-          <div className="md:col-span-2 flex flex-col">
+          <div className={isMobile ? "" : "md:col-span-2"}>
+            {/* Mobile view - simplified camera selection */}
+            {isMobile && (
+              <div className="p-2 bg-gray-50 border-b border-gray-200">
+                <div className="flex items-center justify-center space-x-2 overflow-x-auto py-1">
+                  {cameras.map(camera => (
+                    <button
+                      key={camera.id}
+                      className={`px-3 py-1 text-xs rounded-full whitespace-nowrap ${
+                        selectedCamera?.id === camera.id 
+                          ? 'bg-berkeley-blue text-white' 
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                      onClick={() => setSelectedCamera(camera)}
+                    >
+                      {camera.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Camera view - same for both mobile and desktop */}
             <div className="py-2 px-3 bg-gray-50 border-b border-gray-200 font-semibold text-sm text-gray-700 flex justify-between items-center">
               <span>{selectedCamera?.name} - Most Recent Image</span>
               {selectedCamera && (
@@ -137,7 +142,7 @@ const CameraFeeds: React.FC = () => {
                 <img 
                   src={selectedCamera.imageUrl} 
                   alt={selectedCamera.name} 
-                  className="max-h-[250px] md:max-h-[373px] max-w-full object-contain"
+                  className={`max-w-full object-contain ${isMobile ? 'max-h-[200px]' : 'max-h-[373px]'}`}
                 />
               ) : (
                 <div className="text-center text-gray-400">
