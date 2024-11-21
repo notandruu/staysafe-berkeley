@@ -123,6 +123,15 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
     }
   }, [map, mapStyle, getStyleOptions]);
 
+  // Synchronize activeMarker with selectedWarningId
+  useEffect(() => {
+    if (selectedWarningId) {
+      setActiveMarker(selectedWarningId);
+    } else {
+      setActiveMarker(null);
+    }
+  }, [selectedWarningId]);
+
   const handleMarkerClick = (warningId: string) => {
     onWarningSelect(warningId);
     setActiveMarker(warningId);
@@ -130,6 +139,7 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
 
   const handleInfoWindowClose = () => {
     setActiveMarker(null);
+    onWarningSelect(''); // Close the external popup as well
   };
 
   // Toggle between map styles

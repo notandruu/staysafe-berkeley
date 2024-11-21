@@ -101,14 +101,44 @@
 }
 
 .warning-popup h3 {
-  margin: 0 0 0.25rem;
+  margin: 0;
   font-weight: 600;
   color: #333;
+  line-height: 1.1;
 }
 
 .warning-popup p {
   margin: 0;
-  color: #666;
+  color: #555;
+}
+
+/* Remove padding from Google's info window container */
+.gm-style .gm-style-iw-c {
+  padding: 10px !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+}
+
+.gm-style .gm-style-iw-d {
+  overflow: hidden !important;
+  padding: 0 !important;
+}
+
+/* Custom info window styling */
+.gm-style .gm-style-iw-t::after {
+  box-shadow: -2px 2px 2px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Fix close button positioning */
+.gm-style .gm-style-iw-c button.gm-ui-hover-effect {
+  top: 0 !important;
+  right: 0 !important;
+  margin: 4px !important;
+  opacity: 0.7 !important;
+}
+
+.gm-style .gm-style-iw-c button.gm-ui-hover-effect:hover {
+  opacity: 1 !important;
 }
 
 /* Hide Google Maps attribution elements */
@@ -116,21 +146,6 @@
 .custom-google-map a[href^="https://maps.google.com/maps"],
 .custom-google-map .gmnoprint {
   display: none !important;
-}
-
-/* Custom info window styling */
-.gm-style .gm-style-iw-c {
-  padding: 12px !important;
-  box-shadow: 0 2px 7px 1px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-}
-
-.gm-style .gm-style-iw-d {
-  overflow: hidden !important;
-}
-
-.gm-style .gm-style-iw-t::after {
-  box-shadow: -2px 2px 2px 0 rgba(0, 0, 0, 0.1);
 }
 
 /* Responsive layout adjustments */
