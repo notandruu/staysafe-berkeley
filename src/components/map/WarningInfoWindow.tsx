@@ -34,8 +34,7 @@ const WarningInfoWindow: React.FC<WarningInfoWindowProps> = ({
       options={{
         pixelOffset: new window.google.maps.Size(0, -35),
         disableAutoPan: false,
-        // Hide the default close button
-        closeBoxURL: ""
+        // Hide the default close button using CSS instead
       }}
     >
       <div className="warning-popup p-2 max-w-[240px]">

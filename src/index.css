@@ -131,9 +131,15 @@
   box-shadow: -2px 2px 2px 0 rgba(0, 0, 0, 0.1);
 }
 
-/* Hide close button completely */
-.gm-style .gm-style-iw-c button.gm-ui-hover-effect {
+/* Hide close button completely using a stronger selector */
+.gm-style .gm-style-iw-c .gm-ui-hover-effect,
+.gm-style-iw-c button[title="Close"],
+.gm-style-iw button.gm-ui-hover-effect,
+button.gm-ui-hover-effect {
   display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 /* Hide Google Maps attribution elements */
