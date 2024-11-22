@@ -56,7 +56,7 @@ const CameraFeeds: React.FC = () => {
         <div>
           <CardTitle className="text-xl">Live Camera Feeds</CardTitle>
           <CardDescription className="text-berkeley-gold">
-            Sourced from AlertCalifornia Wildfire Detection Network
+            {/* Removed "Sourced from AlertCalifornia Wildfire Detection Network" */}
           </CardDescription>
         </div>
       </CardHeader>
