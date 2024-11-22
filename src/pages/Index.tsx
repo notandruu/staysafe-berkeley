@@ -320,7 +320,7 @@ const Index: React.FC = () => {
             {/* Map and Warnings Section */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="md:col-span-2 flex flex-col h-full">
-                <div className="relative h-[40vh] md:h-[60vh] bg-gray-100 rounded-lg border overflow-hidden">
+                <div className="relative h-[60vh] md:h-[60vh] bg-gray-100 rounded-lg border overflow-hidden">
                   <Map 
                     warnings={filteredWarnings}
                     selectedWarningId={selectedWarningId}
@@ -341,7 +341,7 @@ const Index: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="mt-3 grid grid-cols-2 gap-3">
                   <SeverityFilter 
                     selectedSeverities={selectedSeverities}
                     onSeverityChange={handleSeverityChange}
@@ -353,7 +353,7 @@ const Index: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col h-[calc(60vh-8rem)] md:h-full gap-4">
+              <div className={`flex flex-col ${isMobile ? 'h-[50vh]' : 'h-full'} gap-4`}>
                 <div className="flex-none">
                   <LineGraph 
                     warnings={warnings} 
