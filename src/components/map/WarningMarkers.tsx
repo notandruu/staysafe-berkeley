@@ -64,18 +64,32 @@ const WarningMarkers: React.FC<WarningMarkersProps> = ({
   // Listen for zoom changes
   useEffect(() => {
     if (typeof google !== 'undefined' && google.maps) {
-      const map = document.querySelector('[aria-label="Map"]');
-      if (map && map.__gm && map.__gm.get) {
-        const gMap = map.__gm.get('map');
-        if (gMap) {
-          const listener = gMap.addListener('zoom_changed', () => {
-            setZoom(gMap.getZoom());
-          });
-          return () => {
-            google.maps.event.removeListener(listener);
-          };
+      // Use a safer approach to get the map instance
+      const handleZoomChange = () => {
+        // Find the map instance from any active marker
+        const mapInstance = document.querySelector('.gm-style')?.parentElement;
+        if (mapInstance && mapInstance instanceof HTMLElement) {
+          // Get the map instance from custom property
+          // Using type assertion to avoid TypeScript errors
+          const gmInstance = (mapInstance as any)?.__gm;
+          if (gmInstance && gmInstance.get) {
+            const gMap = gmInstance.get('map');
+            if (gMap && gMap.getZoom) {
+              setZoom(gMap.getZoom());
+            }
+          }
         }
-      }
+      };
+
+      // Add a global event listener for map zoom change
+      window.addEventListener('resize', handleZoomChange);
+      
+      // Try to get initial zoom after map is loaded
+      setTimeout(handleZoomChange, 1000);
+      
+      return () => {
+        window.removeEventListener('resize', handleZoomChange);
+      };
     }
   }, []);
 

@@ -10,7 +10,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import SeverityFilter, { SeverityLevel } from '@/components/SeverityFilter';
 import DateRangeFilter, { DateRange } from '@/components/DateRangeFilter';
 import LineGraph from '@/components/LineGraph';
-import { isAfter, subDays, subMonths } from 'date-fns';
+import { isAfter, subDays, subMonths, format } from 'date-fns';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -36,9 +36,10 @@ const Index: React.FC = () => {
       setFilteredWarnings(filtered);
 
       if (isRefreshing) {
+        const currentTime = format(new Date(), 'h:mm a');
         toast({
           title: "Data refreshed",
-          description: `Loaded ${data.length} warnings from Google Sheets`,
+          description: `Loaded ${data.length} warnings from WarnMe database at ${currentTime}`,
         });
       }
     } catch (error) {
@@ -170,9 +171,10 @@ const Index: React.FC = () => {
       const filtered = applyFilters(data, selectedSeverities, selectedDateRange);
       setFilteredWarnings(filtered);
       
+      const currentTime = format(new Date(), 'h:mm a');
       toast({
         title: "Data refreshed",
-        description: `Loaded ${data.length} warnings from Google Sheets`,
+        description: `Loaded ${data.length} warnings from WarnMe database at ${currentTime}`,
       });
     } catch (error) {
       console.error('Error refreshing warnings:', error);
