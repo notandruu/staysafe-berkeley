@@ -11,7 +11,7 @@ import SeverityFilter, { SeverityLevel } from '@/components/SeverityFilter';
 import DateRangeFilter, { DateRange } from '@/components/DateRangeFilter';
 import LineGraph from '@/components/LineGraph';
 import { isAfter, subDays, subMonths, format } from 'date-fns';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Shield, AlertTriangle, Map as MapIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 
@@ -273,6 +273,50 @@ const Index: React.FC = () => {
     }
   };
 
+  // Generate AI safety summary based on warning data
+  const generateSafetySummary = () => {
+    if (filteredWarnings.length === 0) {
+      return "No current safety concerns detected in the selected time period.";
+    }
+
+    // Count warnings by area
+    const areaWarnings: Record<string, number> = {};
+    const highRiskAreas: string[] = [];
+    
+    filteredWarnings.forEach(warning => {
+      const area = warning.location.split(',')[0].trim();
+      areaWarnings[area] = (areaWarnings[area] || 0) + 1;
+      
+      if (warning.severity === 'high') {
+        if (!highRiskAreas.includes(area)) {
+          highRiskAreas.push(area);
+        }
+      }
+    });
+    
+    // Sort areas by warning count
+    const sortedAreas = Object.entries(areaWarnings)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([area]) => area);
+      
+    const recentHighSeverity = filteredWarnings.some(w => 
+      w.severity === 'high' && 
+      isAfter(new Date(w.timestamp), subDays(new Date(), 1))
+    );
+    
+    // Generate summary text
+    if (recentHighSeverity) {
+      return `CAUTION: Recent high-severity incidents reported. Areas to avoid: ${sortedAreas.join(', ')}. ${highRiskAreas.length > 0 ? `High risk areas: ${highRiskAreas.join(', ')}.` : ''}`;
+    } else if (sortedAreas.length > 0) {
+      return `Exercise caution around: ${sortedAreas.join(', ')}. ${highRiskAreas.length > 0 ? `Avoid after dark: ${highRiskAreas.join(', ')}.` : ''}`;
+    } else {
+      return "Exercise normal caution around campus areas.";
+    }
+  };
+
+  const safetySummary = generateSafetySummary();
+
   return (
     <div className="h-screen flex flex-col bg-background">
       <header className="bg-[#003262] text-white border-b border-[#FDB515] shadow-md">
@@ -352,6 +396,48 @@ const Index: React.FC = () => {
                     selectedRange={selectedDateRange}
                     onRangeChange={handleDateRangeChange}
                   />
+                </div>
+
+                {/* AI Safety Summary - Desktop Only */}
+                <div className="hidden md:block mt-3">
+                  <div className={`p-3 rounded-lg flex items-start gap-3 ${
+                    safetySummary.includes("CAUTION") 
+                      ? "bg-red-50 border border-red-200" 
+                      : safetySummary.includes("Exercise caution") 
+                        ? "bg-amber-50 border border-amber-200"
+                        : "bg-green-50 border border-green-200"
+                  }`}>
+                    <div className={`rounded-full p-1.5 ${
+                      safetySummary.includes("CAUTION") 
+                        ? "bg-red-100 text-red-600" 
+                        : safetySummary.includes("Exercise caution")
+                          ? "bg-amber-100 text-amber-600" 
+                          : "bg-green-100 text-green-600"
+                    }`}>
+                      {safetySummary.includes("CAUTION") 
+                        ? <AlertTriangle size={18} /> 
+                        : safetySummary.includes("Exercise caution")
+                          ? <MapIcon size={18} /> 
+                          : <Shield size={18} />
+                      }
+                    </div>
+                    <div>
+                      <h3 className={`text-sm font-medium ${
+                        safetySummary.includes("CAUTION") 
+                          ? "text-red-800" 
+                          : safetySummary.includes("Exercise caution")
+                            ? "text-amber-800" 
+                            : "text-green-800"
+                      }`}>
+                        {safetySummary.includes("CAUTION") 
+                          ? "Safety Alert" 
+                          : safetySummary.includes("Exercise caution")
+                            ? "Areas to Watch" 
+                            : "Safety Status"}
+                      </h3>
+                      <p className="text-sm mt-0.5">{safetySummary}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
