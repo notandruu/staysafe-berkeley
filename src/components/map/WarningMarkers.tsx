@@ -1,11 +1,12 @@
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Marker, MarkerClusterer, Circle } from '@react-google-maps/api';
 import { Warning } from '@/types';
 import { GeocodedWarning, MarkerOptions } from '@/types/mapTypes';
 import { getWarningTypeColor } from '@/services/warningService';
 import { isHighDangerWarning } from '@/utils/mapUtils';
 import { MapStyle } from '../Map';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface WarningMarkersProps {
   geocodedWarnings: GeocodedWarning[];
@@ -20,6 +21,9 @@ const WarningMarkers: React.FC<WarningMarkersProps> = ({
   onMarkerClick,
   mapStyle
 }) => {
+  const isMobile = useIsMobile();
+  const [zoom, setZoom] = useState<number>(14);
+  
   // Get marker options based on warning type and map style
   const getMarkerOptions = useCallback((warning: Warning): MarkerOptions => {
     const color = getWarningTypeColor(warning.type);
@@ -57,6 +61,62 @@ const WarningMarkers: React.FC<WarningMarkersProps> = ({
     };
   }, [selectedWarningId, mapStyle]);
 
+  // Listen for zoom changes
+  useEffect(() => {
+    if (typeof google !== 'undefined' && google.maps) {
+      const map = document.querySelector('[aria-label="Map"]');
+      if (map && map.__gm && map.__gm.get) {
+        const gMap = map.__gm.get('map');
+        if (gMap) {
+          const listener = gMap.addListener('zoom_changed', () => {
+            setZoom(gMap.getZoom());
+          });
+          return () => {
+            google.maps.event.removeListener(listener);
+          };
+        }
+      }
+    }
+  }, []);
+
+  // Calculate offset for markers with the same location
+  const getMarkerOffset = (warningId: string) => {
+    if (zoom >= 18) {
+      // Find warnings with the exact same position
+      const currentWarning = geocodedWarnings.find(w => w.id === warningId);
+      if (!currentWarning || !currentWarning.geocodedPosition) return null;
+      
+      const samePositionWarnings = geocodedWarnings.filter(w => {
+        if (!w.geocodedPosition) return false;
+        return (
+          w.id !== warningId &&
+          w.geocodedPosition.lat === currentWarning.geocodedPosition.lat &&
+          w.geocodedPosition.lng === currentWarning.geocodedPosition.lng
+        );
+      });
+      
+      if (samePositionWarnings.length > 0) {
+        // Find the index of current warning in the same position group
+        const allSamePosition = [
+          ...samePositionWarnings, 
+          currentWarning
+        ].sort((a, b) => a.id.localeCompare(b.id));
+        
+        const index = allSamePosition.findIndex(w => w.id === warningId);
+        if (index >= 0) {
+          // Create a small offset in a circular pattern
+          const angle = (index * (360 / allSamePosition.length)) * (Math.PI / 180);
+          const radius = 0.00005; // Small offset - adjust as needed
+          return {
+            lat: currentWarning.geocodedPosition.lat + Math.sin(angle) * radius,
+            lng: currentWarning.geocodedPosition.lng + Math.cos(angle) * radius
+          };
+        }
+      }
+    }
+    return null;
+  };
+
   return (
     <>
       {/* Add red circles for shots fired warnings */}
@@ -84,26 +144,33 @@ const WarningMarkers: React.FC<WarningMarkersProps> = ({
       <MarkerClusterer
         options={{
           imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
-          gridSize: 50,
-          minimumClusterSize: 3,
+          gridSize: isMobile ? 35 : 50, // Smaller grid size on mobile
+          minimumClusterSize: isMobile ? 2 : 3, // Fewer markers needed to form a cluster on mobile
           zoomOnClick: true,
+          maxZoom: isMobile ? 18 : 16, // Higher max zoom on mobile before declustering
           averageCenter: true,
         }}
       >
         {(clusterer) => (
           <>
-            {geocodedWarnings.map(warning => (
-              warning.geocodedPosition && (
+            {geocodedWarnings.map(warning => {
+              if (!warning.geocodedPosition) return null;
+              
+              // Apply offset at high zoom levels for overlapping points
+              const offset = getMarkerOffset(warning.id);
+              const position = offset || warning.geocodedPosition;
+              
+              return (
                 <Marker
                   key={warning.id}
-                  position={warning.geocodedPosition}
+                  position={position}
                   onClick={() => onMarkerClick(warning.id)}
                   icon={getMarkerOptions(warning)}
                   zIndex={isHighDangerWarning(warning.type) ? 10 : 1}
                   clusterer={clusterer}
                 />
-              )
-            ))}
+              );
+            })}
           </>
         )}
       </MarkerClusterer>
