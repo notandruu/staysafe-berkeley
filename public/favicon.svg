@@ -1,0 +1,11 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <defs>
+    <linearGradient id="berkeleyGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDB515" />
+      <stop offset="100%" stop-color="#C4820E" />
+    </linearGradient>
+  </defs>
+  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="#003262" stroke="#003262" stroke-width="1" />
+  <path d="M9 12l2 2 4-4" stroke="url(#berkeleyGold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+</svg>
