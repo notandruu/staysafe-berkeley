@@ -45,7 +45,15 @@ export const useGeocoding = (warnings: Warning[]) => {
       return southSideLocations[Math.floor(Math.random() * southSideLocations.length)];
     }
     
-    if (warning.type === 'robbery' || warning.type === 'theft') {
+    if (warning.type === 'robbery') {
+      const commercialAreas = BERKELEY_NEIGHBORHOODS.filter(n => 
+        n.name.includes('Downtown') || n.name === 'Telegraph Avenue' || n.name === 'Southside');
+      return commercialAreas[Math.floor(Math.random() * commercialAreas.length)];
+    }
+
+    if (warning.description.toLowerCase().includes('theft') || 
+        warning.description.toLowerCase().includes('stolen') ||
+        warning.title.toLowerCase().includes('theft')) {
       const commercialAreas = BERKELEY_NEIGHBORHOODS.filter(n => 
         n.name.includes('Downtown') || n.name === 'Telegraph Avenue' || n.name === 'Southside');
       return commercialAreas[Math.floor(Math.random() * commercialAreas.length)];
