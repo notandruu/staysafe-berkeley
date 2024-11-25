@@ -13,7 +13,8 @@ import { useGeocoding } from '@/hooks/useGeocoding';
 import WarningMarkers from './map/WarningMarkers';
 import WarningInfoWindow from './map/WarningInfoWindow';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, UserLocationIcon } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 // Define map style type
 export type MapStyle = 'standard' | 'dark';
@@ -22,7 +23,11 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [activeMarker, setActiveMarker] = useState<string | null>(null);
   const [mapStyle, setMapStyle] = useState<MapStyle>('standard');
+  const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
+  const userMarkerRef = useRef<google.maps.Marker | null>(null);
   
   // Use our custom hook for geocoding
   const { geocodedWarnings, isLoaded, loadError } = useGeocoding(warnings);
@@ -132,6 +137,137 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
     }
   }, [selectedWarningId]);
 
+  // Update user location marker on the map
+  useEffect(() => {
+    if (!map || !userLocation) return;
+
+    // Remove existing marker if it exists
+    if (userMarkerRef.current) {
+      userMarkerRef.current.setMap(null);
+    }
+
+    // Create a new marker for user location
+    userMarkerRef.current = new google.maps.Marker({
+      position: userLocation,
+      map: map,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: '#4285F4',
+        fillOpacity: 0.8,
+        strokeColor: '#FFFFFF',
+        strokeWeight: 2,
+        scale: 10,
+      },
+      title: 'Your Location',
+      zIndex: 100
+    });
+
+    // Add a pulsing effect circle
+    const pulsingCircle = new google.maps.Circle({
+      strokeColor: '#4285F4',
+      strokeOpacity: 0.5,
+      strokeWeight: 2,
+      fillColor: '#4285F4',
+      fillOpacity: 0.25,
+      map: map,
+      center: userLocation,
+      radius: 50,
+      zIndex: 99
+    });
+
+    // Animate the circle
+    let radius = 50;
+    let expanding = true;
+    const animation = setInterval(() => {
+      if (expanding) {
+        radius += 2;
+        if (radius >= 80) expanding = false;
+      } else {
+        radius -= 2;
+        if (radius <= 50) expanding = true;
+      }
+      pulsingCircle.setRadius(radius);
+    }, 50);
+
+    return () => {
+      clearInterval(animation);
+      if (userMarkerRef.current) {
+        userMarkerRef.current.setMap(null);
+      }
+      pulsingCircle.setMap(null);
+    };
+  }, [map, userLocation]);
+
+  // Get user's location
+  const getUserLocation = () => {
+    if (!map) return;
+    
+    setLocationLoading(true);
+    setLocationError(null);
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userPos = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          
+          setUserLocation(userPos);
+          
+          // Center the map on user's location
+          map.panTo(userPos);
+          map.setZoom(16);
+          
+          setLocationLoading(false);
+          
+          toast({
+            title: "Location Found",
+            description: "Your current location is now shown on the map",
+          });
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          setLocationError(error.message);
+          setLocationLoading(false);
+          
+          let errorMessage = "Could not access your location.";
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = "Please allow location access to use this feature.";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = "Location information is unavailable.";
+              break;
+            case error.TIMEOUT:
+              errorMessage = "Location request timed out.";
+              break;
+          }
+          
+          toast({
+            title: "Location Error",
+            description: errorMessage,
+            variant: "destructive",
+          });
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
+      );
+    } else {
+      setLocationError("Geolocation is not supported by this browser.");
+      setLocationLoading(false);
+      
+      toast({
+        title: "Location Not Supported",
+        description: "Geolocation is not supported by your browser.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleMarkerClick = (warningId: string) => {
     onWarningSelect(warningId);
     setActiveMarker(warningId);
@@ -215,6 +351,30 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
         >
           <span className="mr-1.5">{getStyleButtonIcon()}</span>
           {getStyleButtonText()}
+        </Button>
+      </div>
+
+      {/* Location Button */}
+      <div className="absolute top-2 left-32 z-10">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="bg-white/80 hover:bg-white shadow-md text-xs"
+          onClick={getUserLocation}
+          disabled={locationLoading}
+        >
+          <span className="mr-1.5">
+            {locationLoading ? (
+              <div className="w-3.5 h-3.5 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-target">
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="12" r="6"></circle>
+                <circle cx="12" cy="12" r="2"></circle>
+              </svg>
+            )}
+          </span>
+          {locationLoading ? 'Locating...' : 'My Location'}
         </Button>
       </div>
 
