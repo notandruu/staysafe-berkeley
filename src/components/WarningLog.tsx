@@ -91,9 +91,10 @@ const WarningLog: React.FC<WarningLogProps> = ({
 
   // Calculate the height based on mobile or desktop
   // Each warning card is approximately 96px in height
+  // For mobile, show at least 3 warnings (previously was 2)
   const getScrollAreaHeight = () => {
     const warningHeight = 96;
-    const displayCount = isMobile ? 2 : 4;
+    const displayCount = isMobile ? 3 : 4;
     return `${warningHeight * displayCount}px`;
   };
 

@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { GoogleMap } from '@react-google-maps/api';
 import { Warning } from '@/types';
@@ -13,8 +12,9 @@ import { useGeocoding } from '@/hooks/useGeocoding';
 import WarningMarkers from './map/WarningMarkers';
 import WarningInfoWindow from './map/WarningInfoWindow';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, UserLocationIcon } from 'lucide-react';
+import { Moon, Sun, MapPin } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Define map style type
 export type MapStyle = 'standard' | 'dark';
@@ -28,6 +28,7 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
   const [locationError, setLocationError] = useState<string | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const userMarkerRef = useRef<google.maps.Marker | null>(null);
+  const isMobile = useIsMobile();
   
   // Use our custom hook for geocoding
   const { geocodedWarnings, isLoaded, loadError } = useGeocoding(warnings);
@@ -341,21 +342,23 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
         )}
       </div>
 
-      {/* Map Style Toggle Button */}
-      <div className="absolute top-2 left-2 z-10">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="bg-white/80 hover:bg-white shadow-md text-xs"
-          onClick={toggleMapStyle}
-        >
-          <span className="mr-1.5">{getStyleButtonIcon()}</span>
-          {getStyleButtonText()}
-        </Button>
-      </div>
+      {/* Map Style Toggle Button - Only show on desktop */}
+      {!isMobile && (
+        <div className="absolute top-2 left-2 z-10">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="bg-white/80 hover:bg-white shadow-md text-xs"
+            onClick={toggleMapStyle}
+          >
+            <span className="mr-1.5">{getStyleButtonIcon()}</span>
+            {getStyleButtonText()}
+          </Button>
+        </div>
+      )}
 
-      {/* Location Button */}
-      <div className="absolute top-2 left-32 z-10">
+      {/* Location Button - Position differs based on screen size */}
+      <div className={`absolute top-2 ${isMobile ? 'left-2' : 'left-32'} z-10`}>
         <Button 
           variant="outline" 
           size="sm" 
@@ -367,11 +370,7 @@ const Map: React.FC<MapProps> = ({ warnings, selectedWarningId, onWarningSelect 
             {locationLoading ? (
               <div className="w-3.5 h-3.5 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
             ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-target">
-                <circle cx="12" cy="12" r="10"></circle>
-                <circle cx="12" cy="12" r="6"></circle>
-                <circle cx="12" cy="12" r="2"></circle>
-              </svg>
+              <MapPin size={14} className="text-blue-500" />
             )}
           </span>
           {locationLoading ? 'Locating...' : 'My Location'}
