@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -17,47 +16,45 @@ interface Camera {
   hasError: boolean;
 }
 
-// Sample cameras with embed URLs and fallback static images
 const initialCameras: Omit<Camera, 'isLoading' | 'hasError'>[] = [
   {
     id: 'cam1',
     name: 'Berkeley Hills',
     location: 'Lawrence Berkeley National Laboratory',
-    embedUrl: 'https://live.alertcalifornia.org/axis-BerkeleyLab-p/embed.html',
+    embedUrl: 'https://cameras.alertcalifornia.org/?pos=37.8705_-122.2696_10&id=Axis-BerkeleyLab',
     fallbackImageUrl: 'https://firecams.seismo.unr.edu/firecams/latest/latest_BerkeleyLab.jpg'
   },
   {
     id: 'cam2',
     name: 'Grizzly Peak',
     location: 'Berkeley Hills',
-    embedUrl: 'https://live.alertcalifornia.org/axis-GrizzlyPeak-p/embed.html',
+    embedUrl: 'https://cameras.alertcalifornia.org/?pos=37.8705_-122.2696_10&id=Axis-GrizzlyPeak',
     fallbackImageUrl: 'https://firecams.seismo.unr.edu/firecams/latest/latest_GrizzlyPeak.jpg'
   },
   {
     id: 'cam3',
     name: 'Tilden Park',
     location: 'Berkeley Hills',
-    embedUrl: 'https://live.alertcalifornia.org/axis-TildenPark-p/embed.html',
+    embedUrl: 'https://cameras.alertcalifornia.org/?pos=37.8705_-122.2696_10&id=Axis-TildenPark',
     fallbackImageUrl: 'https://firecams.seismo.unr.edu/firecams/latest/latest_TildenPark.jpg'
   },
   {
     id: 'cam4',
     name: 'Richmond',
     location: 'East Bay',
-    embedUrl: 'https://live.alertcalifornia.org/axis-Richmond-p/embed.html',
+    embedUrl: 'https://cameras.alertcalifornia.org/?pos=37.8705_-122.2696_10&id=Axis-Richmond',
     fallbackImageUrl: 'https://firecams.seismo.unr.edu/firecams/latest/latest_Richmond.jpg'
   },
   {
     id: 'cam5',
     name: 'Oakland Hills',
     location: 'East Bay',
-    embedUrl: 'https://live.alertcalifornia.org/axis-OaklandHills-p/embed.html',
+    embedUrl: 'https://cameras.alertcalifornia.org/?pos=37.8705_-122.2696_10&id=Axis-OaklandHills',
     fallbackImageUrl: 'https://firecams.seismo.unr.edu/firecams/latest/latest_OaklandHills.jpg'
   }
 ];
 
 const CameraFeeds: React.FC = () => {
-  // Add loading and error states to each camera
   const [cameras, setCameras] = useState<Camera[]>(
     initialCameras.map(cam => ({
       ...cam,
@@ -70,7 +67,6 @@ const CameraFeeds: React.FC = () => {
   const isMobile = useIsMobile();
   const iframeRefs = useRef<Record<string, HTMLIFrameElement | null>>({});
 
-  // Set initial selected camera after state is initialized
   useEffect(() => {
     if (cameras.length > 0 && !selectedCamera) {
       setSelectedCamera(cameras[0]);
@@ -102,7 +98,6 @@ const CameraFeeds: React.FC = () => {
   const refreshCameraFeeds = () => {
     setIsRefreshing(true);
     
-    // Reset all cameras to loading state
     setCameras(prevCameras => 
       prevCameras.map(cam => ({
         ...cam,
@@ -111,7 +106,6 @@ const CameraFeeds: React.FC = () => {
       }))
     );
     
-    // Force iframe refresh by recreating them
     setTimeout(() => {
       Object.keys(iframeRefs.current).forEach(key => {
         const iframe = iframeRefs.current[key];
@@ -210,7 +204,6 @@ const CameraFeeds: React.FC = () => {
       </CardHeader>
       <CardContent className="p-0">
         {isMobile ? (
-          // Mobile layout - show all cameras with minimal titles
           <div className="space-y-4 py-4">
             {cameras.map((camera) => (
               <div key={camera.id} className="px-4">
@@ -223,7 +216,6 @@ const CameraFeeds: React.FC = () => {
             ))}
           </div>
         ) : (
-          // Desktop layout - sidebar selection with larger selected camera view
           <div className="grid grid-cols-3 gap-0">
             <div className="border-r border-gray-200">
               <div className="py-2 px-3 bg-gray-50 border-b border-gray-200 font-semibold text-sm text-gray-700">
