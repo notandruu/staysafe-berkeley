@@ -1,98 +1,66 @@
+# StaySafe Berkeley
 
-# StaySafe Berkeley - Campus Safety Alerts
+An interactive campus safety dashboard for UC Berkeley — displaying real-time warnings, incidents, and live camera feeds on an interactive map.
 
-## Project info
+Live at [staysafeberkeley.org](https://staysafeberkeley.org)
 
-**URL**: https://staysafeberkeley.org
+## Features
 
-## How can I edit this code?
+- **Interactive Map** — Google Maps-powered map with clustered warning markers across campus and surrounding areas
+- **Warning Log** — Scrollable sidebar listing all incidents with severity badges and timestamps
+- **Severity Filtering** — Toggle high / medium / low severity warnings
+- **Date Range Filtering** — Filter by last 24 hours, 7 days, or 30 days
+- **Safety Summary** — Auto-generated alert banner based on current warning data (CAUTION / Areas to Watch / All Clear)
+- **Trend Graph** — Line chart showing warning frequency over the selected time period
+- **Live Camera Feeds** — Live traffic/campus camera viewer with desktop and mobile layouts
+- **Mobile Responsive** — Adapted layouts for map size, camera list, and popups on small screens
 
-There are several ways of editing your application.
+## Warning Types
 
-**Use Lovable**
+Police activity, fire, weather, hazmat, power outage, protest, violent crime, shots fired, robbery, earthquake
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/2d3b3eee-540b-45c0-af92-188ab44e0d6a) and start prompting.
+## Tech Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Framework**: React 18 + TypeScript + Vite
+- **UI**: Tailwind CSS + shadcn/ui (Radix UI)
+- **Maps**: `@react-google-maps/api`
+- **Database**: Supabase
+- **Charts**: Recharts
+- **Routing**: React Router v6
 
-**Use your preferred IDE**
+## Getting Started
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Environment Variables
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```env
+VITE_GOOGLE_SHEETS_API_KEY=your_key_here
+VITE_GOOGLE_SHEET_ID=your_sheet_id_here
+```
 
-**Use GitHub Codespaces**
+Supabase credentials are configured in `src/integrations/supabase/client.ts`.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Project Structure
 
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-- Google Maps API
-- UC Berkeley safety data
-
-## How can I deploy this project to staysafeberkeley.org?
-
-### Option 1: Publish via Lovable
-
-1. Open [Lovable](https://lovable.dev/projects/2d3b3eee-540b-45c0-af92-188ab44e0d6a) and click on Share -> Publish.
-2. After deployment, set up your DNS to point to the Lovable deployment.
-
-### Option 2: Use Netlify with custom domain
-
-1. Export your repository to GitHub.
-2. Connect Netlify to your GitHub repository.
-3. In Netlify, go to Domain settings and add your custom domain "staysafeberkeley.org".
-4. Follow Netlify's instructions to update your DNS settings:
-   - Add CNAME record pointing to your Netlify site
-   - Or use Netlify DNS for complete management
-5. Wait for DNS propagation (can take up to 48 hours).
-
-### DNS Configuration
-
-When connecting your custom domain to the deployed app, you'll need to set up the following DNS records:
-
-- **A record**: Point the root domain to the IP address provided by your hosting provider.
-- **CNAME record**: Point the "www" subdomain to your deployment URL.
-
-## Domain ownership verification
-
-Some platforms may require you to verify domain ownership by:
-1. Adding a TXT record to your DNS settings
-2. Uploading an HTML file to your domain
-3. Adding a specific meta tag to your site's header
-
-Follow the specific instructions provided by your chosen deployment platform.
+```
+src/
+├── components/
+│   ├── camera/        # Camera feed viewer components
+│   ├── map/           # Map markers and info windows
+│   ├── ui/            # shadcn/ui primitives
+│   ├── CameraFeeds    # Live camera feeds section
+│   ├── WarningLog     # Scrollable incident list
+│   ├── WarningPopup   # Selected warning detail card
+│   ├── SeverityFilter
+│   ├── DateRangeFilter
+│   └── LineGraph
+├── hooks/             # useGeocoding, use-mobile
+├── pages/             # Index (main dashboard), NotFound
+├── services/          # warningService, googleSheetsService
+├── types/             # Warning, WarningType, map types
+└── utils/             # mapUtils
 ```
