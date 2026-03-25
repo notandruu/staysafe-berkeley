@@ -1,8 +1,8 @@
-# StaySafe Berkeley
+# Berkeley Safety
 
 An interactive campus safety dashboard for UC Berkeley — displaying real-time warnings, incidents, and live camera feeds on an interactive map.
 
-Live at [staysafeberkeley.org](https://staysafeberkeley.org)
+Live at [berkeleysafety.live](https://berkeleysafety.live)
 
 ## Features
 

@@ -324,7 +324,7 @@ const Index: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-                StaySafe Berkeley
+                Berkeley Safety
               </h1>
               <p className="hidden md:block text-base text-[#FDB515] font-medium mt-1">
                 Interactive map of campus safety alerts and warnings
