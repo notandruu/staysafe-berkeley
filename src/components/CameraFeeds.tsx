@@ -13,38 +13,38 @@ import MobileCameraList from './camera/MobileCameraList';
 const initialCameras: Omit<Camera, 'isLoading' | 'hasError'>[] = [
   {
     id: 'cam1',
-    name: 'Berkeley Hills',
-    location: 'Lawrence Berkeley National Laboratory',
-    embedUrl: 'https://cameras.alertcalifornia.org/?pos=37.8705_-122.2696_10&id=Axis-BerkeleyLab',
-    fallbackImageUrl: 'https://firecams.seismo.unr.edu/firecams/latest/latest_BerkeleyLab.jpg'
+    name: 'I-80 at Ashby Ave',
+    location: 'Berkeley',
+    embedUrl: '',
+    fallbackImageUrl: 'https://cwwp2.dot.ca.gov/data/d4/cctv/image/tv121i80ashby/tv121i80ashby.jpg'
   },
   {
     id: 'cam2',
-    name: 'Grizzly Peak',
-    location: 'Berkeley Hills',
-    embedUrl: 'https://cameras.alertcalifornia.org/?pos=37.8705_-122.2696_10&id=Axis-GrizzlyPeak',
-    fallbackImageUrl: 'https://firecams.seismo.unr.edu/firecams/latest/latest_GrizzlyPeak.jpg'
+    name: 'I-80 West of Ashby',
+    location: 'Berkeley',
+    embedUrl: '',
+    fallbackImageUrl: 'https://cwwp2.dot.ca.gov/data/d4/cctv/image/tv516i80westofashbyavenue/tv516i80westofashbyavenue.jpg'
   },
   {
     id: 'cam3',
-    name: 'Tilden Park',
-    location: 'Berkeley Hills',
-    embedUrl: 'https://cameras.alertcalifornia.org/?pos=37.8705_-122.2696_10&id=Axis-TildenPark',
-    fallbackImageUrl: 'https://firecams.seismo.unr.edu/firecams/latest/latest_TildenPark.jpg'
+    name: 'I-80 at Gilman St',
+    location: 'Berkeley / Albany',
+    embedUrl: '',
+    fallbackImageUrl: 'https://cwwp2.dot.ca.gov/data/d4/cctv/image/tv515i80gilmanstreet/tv515i80gilmanstreet.jpg'
   },
   {
     id: 'cam4',
-    name: 'Richmond',
-    location: 'East Bay',
-    embedUrl: 'https://cameras.alertcalifornia.org/?pos=37.8705_-122.2696_10&id=Axis-Richmond',
-    fallbackImageUrl: 'https://firecams.seismo.unr.edu/firecams/latest/latest_Richmond.jpg'
+    name: 'I-80 at Powell St',
+    location: 'Emeryville',
+    embedUrl: '',
+    fallbackImageUrl: 'https://cwwp2.dot.ca.gov/data/d4/cctv/image/tv107i80powellstreet/tv107i80powellstreet.jpg'
   },
   {
     id: 'cam5',
-    name: 'Oakland Hills',
-    location: 'East Bay',
-    embedUrl: 'https://cameras.alertcalifornia.org/?pos=37.8705_-122.2696_10&id=Axis-OaklandHills',
-    fallbackImageUrl: 'https://firecams.seismo.unr.edu/firecams/latest/latest_OaklandHills.jpg'
+    name: 'SR-24 at Telegraph Ave',
+    location: 'Oakland',
+    embedUrl: '',
+    fallbackImageUrl: 'https://cwwp2.dot.ca.gov/data/d4/cctv/image/tv113sr24attelegraph/tv113sr24attelegraph.jpg'
   }
 ];
 
