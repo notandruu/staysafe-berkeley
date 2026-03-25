@@ -32,8 +32,8 @@ const SAMPLE_WARNINGS: Warning[] = [
     id: uuidv4(),
     timestamp: generateTimestamp(0, -5), // 5 hours ago
     type: "fire",
-    title: "Small Fire Reported",
-    description: "Small fire reported in Chemistry Building. Fire department on scene. Building evacuated.",
+    title: "Fire Alarm — Chemistry Building",
+    description: "Fire alarm activated in Chemistry Building. Fire department on scene. Building evacuated as a precaution.",
     location: "Chemistry Building",
     coordinates: {
       latitude: 37.8734,
@@ -134,27 +134,14 @@ const SAMPLE_WARNINGS: Warning[] = [
     },
     severity: "high"
   },
-  {
-    id: uuidv4(),
-    timestamp: generateTimestamp(6, -8), // 6 days, 8 hours ago
-    type: "shots_fired",
-    title: "Shots Fired",
-    description: "Reports of shots fired. Police on scene. Please avoid the area.",
-    location: "South Campus",
-    coordinates: {
-      latitude: 37.8662,
-      longitude: -122.2565
-    },
-    severity: "high"
-  },
 
   // Past month (but more than a week ago)
   {
     id: uuidv4(),
     timestamp: generateTimestamp(10, -10), // 10 days ago
     type: "fire",
-    title: "Smoke Reported",
-    description: "Smoke reported from trash can near Wheeler Hall. Fire department responded. No damage.",
+    title: "Fire Alarm — Wheeler Hall",
+    description: "Fire alarm triggered near Wheeler Hall. Fire department responded and cleared the scene. No damage.",
     location: "Wheeler Hall",
     coordinates: {
       latitude: 37.8711,
@@ -270,23 +257,10 @@ const SAMPLE_WARNINGS: Warning[] = [
   },
   {
     id: uuidv4(),
-    timestamp: generateTimestamp(75, -11), // 75 days ago
-    type: "shots_fired",
-    title: "Shots Heard",
-    description: "Reports of gunshots in the vicinity of campus. Police investigating.",
-    location: "West Berkeley",
-    coordinates: {
-      latitude: 37.8634,
-      longitude: -122.2902
-    },
-    severity: "high"
-  },
-  {
-    id: uuidv4(),
     timestamp: generateTimestamp(85, -8), // 85 days ago
     type: "fire",
-    title: "Building Fire",
-    description: "Fire reported in residential building near campus. Multiple fire units responding.",
+    title: "Fire Alarm — Northside Residential",
+    description: "Fire alarm activated in residential building near campus. Multiple fire units responded. Building evacuated.",
     location: "Northside",
     coordinates: {
       latitude: 37.8766,
@@ -331,7 +305,7 @@ export const getWarningTypeIcon = (type: WarningType): string => {
     case "earthquake":
       return "Waves";
     case "fire":
-      return "Flame";
+      return "BellRing";
     case "weather":
       return "CloudLightning";
     case "police":

@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 
@@ -25,7 +26,7 @@ const SeverityFilter: React.FC<SeverityFilterProps> = ({
       <div className="text-sm font-medium text-gray-700 mb-2 sm:mb-0 sm:mr-2">Filter by severity:</div>
       <div className="flex flex-wrap gap-4">
         {severityOptions.map((option) => (
-          <div key={option.value} className="flex items-center space-x-2">
+          <motion.div key={option.value} whileTap={{ scale: 0.93 }} className="flex items-center space-x-2">
             <Checkbox
               id={`severity-${option.value}`}
               checked={selectedSeverities.includes(option.value)}
@@ -42,7 +43,7 @@ const SeverityFilter: React.FC<SeverityFilterProps> = ({
                 {option.label}
               </Label>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
     </div>

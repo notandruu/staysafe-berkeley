@@ -1,8 +1,7 @@
 
 import { Warning } from './index';
 
-// Google Maps API key
-export const GOOGLE_MAPS_API_KEY = 'AIzaSyAJ5I98cSgM_DVo3MGcCzX6eU75LXYYxIs';
+export const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 
 export interface MapProps {
   warnings: Warning[];
