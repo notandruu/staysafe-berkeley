@@ -400,42 +400,36 @@ const Index: React.FC = () => {
 
                 {/* AI Safety Summary - Desktop Only */}
                 <div className="hidden md:block mt-3">
-                  <div className={`p-3 rounded-lg flex items-start gap-3 ${
-                    safetySummary.includes("CAUTION") 
-                      ? "bg-red-50 border border-red-200" 
-                      : safetySummary.includes("Exercise caution") 
-                        ? "bg-amber-50 border border-amber-200"
-                        : "bg-green-50 border border-green-200"
+                  <div className={`p-3 rounded-lg flex items-start gap-3 bg-white border border-slate-200 border-l-4 ${
+                    safetySummary.includes("CAUTION")
+                      ? "border-l-red-500"
+                      : safetySummary.includes("Exercise caution")
+                        ? "border-l-slate-400"
+                        : "border-l-green-500"
                   }`}>
                     <div className={`rounded-full p-1.5 ${
-                      safetySummary.includes("CAUTION") 
-                        ? "bg-red-100 text-red-600" 
+                      safetySummary.includes("CAUTION")
+                        ? "text-red-500"
                         : safetySummary.includes("Exercise caution")
-                          ? "bg-amber-100 text-amber-600" 
-                          : "bg-green-100 text-green-600"
+                          ? "text-slate-500"
+                          : "text-green-500"
                     }`}>
-                      {safetySummary.includes("CAUTION") 
-                        ? <AlertTriangle size={18} /> 
+                      {safetySummary.includes("CAUTION")
+                        ? <AlertTriangle size={18} />
                         : safetySummary.includes("Exercise caution")
-                          ? <MapIcon size={18} /> 
+                          ? <MapIcon size={18} />
                           : <Shield size={18} />
                       }
                     </div>
                     <div>
-                      <h3 className={`text-sm font-medium ${
-                        safetySummary.includes("CAUTION") 
-                          ? "text-red-800" 
+                      <h3 className="text-sm font-medium text-slate-800">
+                        {safetySummary.includes("CAUTION")
+                          ? "Safety Alert"
                           : safetySummary.includes("Exercise caution")
-                            ? "text-amber-800" 
-                            : "text-green-800"
-                      }`}>
-                        {safetySummary.includes("CAUTION") 
-                          ? "Safety Alert" 
-                          : safetySummary.includes("Exercise caution")
-                            ? "Areas to Watch" 
+                            ? "Areas to Watch"
                             : "Safety Status"}
                       </h3>
-                      <p className="text-sm mt-0.5">{safetySummary}</p>
+                      <p className="text-sm mt-0.5 text-slate-600">{safetySummary}</p>
                     </div>
                   </div>
                 </div>

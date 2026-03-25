@@ -329,27 +329,27 @@ export const refreshWarnings = async (): Promise<Warning[]> => {
 export const getWarningTypeIcon = (type: WarningType): string => {
   switch (type) {
     case "earthquake":
-      return "layers";
+      return "Waves";
     case "fire":
-      return "flame";
+      return "Flame";
     case "weather":
-      return "cloud";
+      return "CloudLightning";
     case "police":
-      return "shield";
+      return "ShieldAlert";
     case "hazmat":
-      return "flask";
+      return "Biohazard";
     case "power":
-      return "zap";
+      return "ZapOff";
     case "protest":
-      return "megaphone";
+      return "Megaphone";
     case "violent_crime":
-      return "fist";
+      return "Swords";
     case "shots_fired":
-      return "target";
-    case "robbery": 
-      return "shopping-bag";
+      return "Crosshair";
+    case "robbery":
+      return "Wallet";
     default:
-      return "alert-circle";
+      return "AlertCircle";
   }
 };
 

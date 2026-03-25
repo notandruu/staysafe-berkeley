@@ -62,7 +62,7 @@ const WarningLog: React.FC<WarningLogProps> = ({
 
   // Helper to render the correct icon
   const renderIcon = (iconName: string) => {
-    const IconComponent = (LucideIcons as any)[iconName.charAt(0).toUpperCase() + iconName.slice(1)];
+    const IconComponent = (LucideIcons as any)[iconName];
     if (IconComponent) {
       return <IconComponent className="h-4 w-4" />;
     }
