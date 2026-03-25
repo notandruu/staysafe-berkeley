@@ -21,7 +21,7 @@ const WarningPopup: React.FC<WarningPopupProps> = ({ warning, onClose }) => {
   const severityColor = getSeverityColor(warning.severity);
 
   return (
-    <Card className="w-full max-w-md shadow-lg">
+    <Card className="w-full max-w-md shadow-lg animate-in fade-in slide-in-from-right-5 duration-300">
       <CardHeader className="pb-2 relative">
         <button 
           onClick={onClose}

@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { differenceInDays, format, subDays, differenceInHours, addHours } from 'date-fns';
 import { Warning } from '@/types';
@@ -94,12 +93,7 @@ const LineGraph: React.FC<LineGraphProps> = ({ warnings, days = 7 }) => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay: 0.15 }}
-      className="bg-white rounded-lg border shadow-sm p-4 h-64"
-    >
+    <div className="bg-white rounded-lg border shadow-sm p-4 h-64">
       <h3 className="text-lg font-semibold mb-2">{getTitle()}</h3>
       <ResponsiveContainer width="100%" height="85%">
         <LineChart
@@ -132,7 +126,7 @@ const LineGraph: React.FC<LineGraphProps> = ({ warnings, days = 7 }) => {
           />
         </LineChart>
       </ResponsiveContainer>
-    </motion.div>
+    </div>
   );
 };
 

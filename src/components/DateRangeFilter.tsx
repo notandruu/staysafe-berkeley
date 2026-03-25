@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { CalendarDays } from 'lucide-react';
 
@@ -22,18 +21,30 @@ const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
         <h3 className="text-sm font-medium">Date Range</h3>
       </div>
       <div className="flex flex-wrap gap-2">
-        {(['24h', '7d', '30d'] as const).map((range) => (
-          <motion.div key={range} whileTap={{ scale: 0.94 }} className="flex-1">
-            <Button
-              size="sm"
-              variant={selectedRange === range ? 'default' : 'outline'}
-              onClick={() => onRangeChange(range)}
-              className="w-full"
-            >
-              {range === '24h' ? '24 Hours' : range === '7d' ? '7 Days' : '30 Days'}
-            </Button>
-          </motion.div>
-        ))}
+        <Button
+          size="sm"
+          variant={selectedRange === '24h' ? 'default' : 'outline'}
+          onClick={() => onRangeChange('24h')}
+          className="flex-1"
+        >
+          24 Hours
+        </Button>
+        <Button
+          size="sm"
+          variant={selectedRange === '7d' ? 'default' : 'outline'}
+          onClick={() => onRangeChange('7d')}
+          className="flex-1"
+        >
+          7 Days
+        </Button>
+        <Button
+          size="sm"
+          variant={selectedRange === '30d' ? 'default' : 'outline'}
+          onClick={() => onRangeChange('30d')}
+          className="flex-1"
+        >
+          30 Days
+        </Button>
       </div>
     </div>
   );

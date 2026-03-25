@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import Map from '@/components/Map';
 import WarningLog from '@/components/WarningLog';
 import WarningPopup from '@/components/WarningPopup';
@@ -320,12 +319,7 @@ const Index: React.FC = () => {
 
   return (
     <div className="h-screen flex flex-col bg-background">
-      <motion.header
-        initial={{ y: -16, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="bg-[#003262] text-white border-b border-[#FDB515] shadow-md"
-      >
+      <header className="bg-[#003262] text-white border-b border-[#FDB515] shadow-md">
         <div className="container mx-auto py-3 px-4">
           <div className="flex items-center justify-between">
             <div>
@@ -336,16 +330,16 @@ const Index: React.FC = () => {
                 Interactive map of campus safety alerts and warnings
               </p>
             </div>
-
+            
             <div className="flex items-center space-x-2">
               <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-[#FDB515] flex items-center justify-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
                   strokeLinejoin="round"
                   className="text-[#003262] h-5 w-5 md:h-6 md:w-6"
                 >
@@ -357,7 +351,7 @@ const Index: React.FC = () => {
             </div>
           </div>
         </div>
-      </motion.header>
+      </header>
 
       <main className="flex-1 overflow-y-auto container mx-auto p-4 pb-8">
         {isLoading ? (
@@ -368,12 +362,7 @@ const Index: React.FC = () => {
             </div>
           </div>
         ) : (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.35, delay: 0.1 }}
-            className="flex flex-col space-y-6"
-          >
+          <div className="flex flex-col space-y-6">
             {/* Map and Warnings Section */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="md:col-span-2 flex flex-col h-full">
@@ -411,47 +400,38 @@ const Index: React.FC = () => {
 
                 {/* AI Safety Summary - Desktop Only */}
                 <div className="hidden md:block mt-3">
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={safetySummary.includes("CAUTION") ? "caution" : safetySummary.includes("Exercise caution") ? "watch" : "safe"}
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      transition={{ duration: 0.2 }}
-                      className={`p-3 rounded-lg flex items-start gap-3 bg-white border border-slate-200 border-l-4 ${
-                        safetySummary.includes("CAUTION")
-                          ? "border-l-red-500"
-                          : safetySummary.includes("Exercise caution")
-                            ? "border-l-slate-400"
-                            : "border-l-green-500"
-                      }`}
-                    >
-                      <div className={`rounded-full p-1.5 ${
-                        safetySummary.includes("CAUTION")
-                          ? "text-red-500"
-                          : safetySummary.includes("Exercise caution")
-                            ? "text-slate-500"
-                            : "text-green-500"
-                      }`}>
+                  <div className={`p-3 rounded-lg flex items-start gap-3 bg-white border border-slate-200 border-l-4 ${
+                    safetySummary.includes("CAUTION")
+                      ? "border-l-red-500"
+                      : safetySummary.includes("Exercise caution")
+                        ? "border-l-slate-400"
+                        : "border-l-green-500"
+                  }`}>
+                    <div className={`rounded-full p-1.5 ${
+                      safetySummary.includes("CAUTION")
+                        ? "text-red-500"
+                        : safetySummary.includes("Exercise caution")
+                          ? "text-slate-500"
+                          : "text-green-500"
+                    }`}>
+                      {safetySummary.includes("CAUTION")
+                        ? <AlertTriangle size={18} />
+                        : safetySummary.includes("Exercise caution")
+                          ? <MapIcon size={18} />
+                          : <Shield size={18} />
+                      }
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-medium text-slate-800">
                         {safetySummary.includes("CAUTION")
-                          ? <AlertTriangle size={18} />
+                          ? "Safety Alert"
                           : safetySummary.includes("Exercise caution")
-                            ? <MapIcon size={18} />
-                            : <Shield size={18} />
-                        }
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium text-slate-800">
-                          {safetySummary.includes("CAUTION")
-                            ? "Safety Alert"
-                            : safetySummary.includes("Exercise caution")
-                              ? "Areas to Watch"
-                              : "Safety Status"}
-                        </h3>
-                        <p className="text-sm mt-0.5 text-slate-600">{safetySummary}</p>
-                      </div>
-                    </motion.div>
-                  </AnimatePresence>
+                            ? "Areas to Watch"
+                            : "Safety Status"}
+                      </h3>
+                      <p className="text-sm mt-0.5 text-slate-600">{safetySummary}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -475,40 +455,29 @@ const Index: React.FC = () => {
             </div>
 
             {/* Live Camera Feeds Section */}
-            <motion.div
-              className="mt-6"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.3 }}
-            >
+            <div className="mt-6">
               <CameraFeeds />
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         )}
       </main>
 
-      <AnimatePresence>
-        {showPopup && selectedWarning && (
-          <motion.div
-            initial={{ opacity: 0, y: isMobile ? 24 : 0, x: isMobile ? 0 : -12, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
-            exit={{ opacity: 0, y: isMobile ? 24 : 0, x: isMobile ? 0 : -12, scale: 0.97 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
-            className={`
-              fixed z-10
-              ${isMobile
-                ? 'inset-x-0 bottom-0 p-4 pb-safe'
-                : 'top-20 left-4 max-w-md'
-              }
-            `}
-          >
-            <WarningPopup
-              warning={selectedWarning}
-              onClose={handleClosePopup}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {showPopup && selectedWarning && (
+        <div 
+          className={`
+            fixed z-10 transition-all duration-300
+            ${isMobile 
+              ? 'inset-x-0 bottom-0 p-4 pb-safe'  
+              : 'top-20 left-4 max-w-md'
+            }
+          `}
+        >
+          <WarningPopup 
+            warning={selectedWarning} 
+            onClose={handleClosePopup}
+          />
+        </div>
+      )}
     </div>
   );
 };
