@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { RefreshCw } from 'lucide-react';
@@ -58,8 +58,8 @@ const CameraFeeds: React.FC = () => {
   );
   const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const isMobile = useIsMobile();
-  const iframeRefs = useRef<Record<string, HTMLIFrameElement | null>>({});
 
   useEffect(() => {
     if (cameras.length > 0 && !selectedCamera) {
@@ -68,60 +68,34 @@ const CameraFeeds: React.FC = () => {
   }, [cameras]);
 
   const handleIframeLoad = (cameraId: string) => {
-    setCameras(prevCameras => 
-      prevCameras.map(cam => 
+    setCameras(prevCameras =>
+      prevCameras.map(cam =>
         cam.id === cameraId ? { ...cam, isLoading: false } : cam
       )
     );
   };
 
   const handleIframeError = (cameraId: string) => {
-    setCameras(prevCameras => 
-      prevCameras.map(cam => 
+    setCameras(prevCameras =>
+      prevCameras.map(cam =>
         cam.id === cameraId ? { ...cam, hasError: true, isLoading: false } : cam
       )
     );
-    
-    toast({
-      title: "Camera Feed Error",
-      description: `Could not load the feed for ${cameras.find(c => c.id === cameraId)?.name}. Showing static image instead.`,
-      variant: "destructive",
-    });
   };
 
   const refreshCameraFeeds = () => {
     setIsRefreshing(true);
-    
-    setCameras(prevCameras => 
-      prevCameras.map(cam => ({
-        ...cam,
-        isLoading: true, 
-        hasError: false
-      }))
+    setCameras(prevCameras =>
+      prevCameras.map(cam => ({ ...cam, isLoading: true, hasError: false }))
     );
-    
+    setRefreshKey(k => k + 1);
     setTimeout(() => {
-      Object.keys(iframeRefs.current).forEach(key => {
-        const iframe = iframeRefs.current[key];
-        if (iframe) {
-          const src = iframe.src;
-          iframe.src = '';
-          setTimeout(() => {
-            iframe.src = src;
-          }, 50);
-        }
-      });
-      
       setIsRefreshing(false);
       toast({
-        title: "Refreshing camera feeds",
-        description: "Camera feeds are being refreshed. This may take a moment."
+        title: "Camera feeds refreshed",
+        description: "All feeds are reloading with the latest images."
       });
-    }, 100);
-  };
-
-  const getIframeRef = (cameraId: string) => (el: HTMLIFrameElement | null) => {
-    iframeRefs.current[cameraId] = el;
+    }, 500);
   };
 
   return (
@@ -145,28 +119,28 @@ const CameraFeeds: React.FC = () => {
         </Button>
       </CardHeader>
       <CardContent className="p-0">
-        {isMobile ? (
-          <MobileCameraList 
-            cameras={cameras}
-            onLoad={handleIframeLoad}
-            onError={handleIframeError}
-            getIframeRef={getIframeRef}
-          />
-        ) : (
-          <div className="grid grid-cols-3 gap-0">
-            <CameraList 
+        <div key={refreshKey}>
+          {isMobile ? (
+            <MobileCameraList
               cameras={cameras}
-              selectedCameraId={selectedCamera?.id || null}
-              onCameraSelect={setSelectedCamera}
-            />
-            <CameraViewer 
-              camera={selectedCamera}
               onLoad={handleIframeLoad}
               onError={handleIframeError}
-              iframeRef={selectedCamera ? getIframeRef(selectedCamera.id) : () => {}}
             />
-          </div>
-        )}
+          ) : (
+            <div className="grid grid-cols-3 gap-0">
+              <CameraList
+                cameras={cameras}
+                selectedCameraId={selectedCamera?.id || null}
+                onCameraSelect={setSelectedCamera}
+              />
+              <CameraViewer
+                camera={selectedCamera}
+                onLoad={handleIframeLoad}
+                onError={handleIframeError}
+              />
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

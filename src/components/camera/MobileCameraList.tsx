@@ -8,15 +8,9 @@ interface MobileCameraListProps {
   cameras: CameraType[];
   onLoad: (cameraId: string) => void;
   onError: (cameraId: string) => void;
-  getIframeRef: (id: string) => (el: HTMLIFrameElement | null) => void;
 }
 
-const MobileCameraList: React.FC<MobileCameraListProps> = ({ 
-  cameras, 
-  onLoad, 
-  onError,
-  getIframeRef 
-}) => {
+const MobileCameraList: React.FC<MobileCameraListProps> = ({ cameras, onLoad, onError }) => {
   return (
     <div className="space-y-4 py-4">
       {cameras.map((camera) => (
@@ -25,11 +19,10 @@ const MobileCameraList: React.FC<MobileCameraListProps> = ({
             <Camera size={14} className="mr-1.5 text-berkeley-blue" />
             {camera.name}
           </div>
-          <CameraContent 
-            camera={camera} 
-            onLoad={onLoad} 
+          <CameraContent
+            camera={camera}
+            onLoad={onLoad}
             onError={onError}
-            iframeRef={getIframeRef(camera.id)}
           />
         </div>
       ))}
